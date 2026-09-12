@@ -1,6 +1,5 @@
 import os
 import uuid
-from functools import wraps
 
 from flask import (
     Blueprint,
@@ -23,22 +22,18 @@ bp = Blueprint("admin", __name__)
 ALLOWED_IMAGE_EXT = {"png", "jpg", "jpeg", "gif", "webp", "heic"}
 
 
-def _admin_path():
-    return current_app.config["ADMIN_PATH"]
-
-
-def admin_required(view):
-    @wraps(view)
-    def wrapped(*args, **kwargs):
-        if not session.get("admin"):
-            return redirect(url_for("admin.login"))
-        return view(*args, **kwargs)
-
-    return wrapped
-
-
 def register_admin_routes(app):
     path = app.config["ADMIN_PATH"]
+
+    # One gate for the whole blueprint, so a route added later can't
+    # accidentally ship unprotected.
+    @bp.before_request
+    def require_admin():
+        if request.endpoint == "admin.login":
+            return None
+        if not session.get("admin"):
+            return redirect(url_for("admin.login"))
+        return None
 
     @bp.route(f"/{path}/login", methods=["GET", "POST"])
     def login():
@@ -46,6 +41,9 @@ def register_admin_routes(app):
             password = request.form.get("password", "")
             if password and password == current_app.config["ADMIN_PASSWORD"]:
                 session["admin"] = True
+                # survives browser close; paired with a stable SECRET_KEY
+                # this means logging in once per device, not once per restart
+                session.permanent = True
                 return redirect(url_for("admin.dashboard"))
             flash("Wrong password.")
         return render_template("admin_login.html", admin_path=path)
@@ -56,7 +54,6 @@ def register_admin_routes(app):
         return redirect(url_for("admin.login"))
 
     @bp.route(f"/{path}/resolve-location", methods=["POST"])
-    @admin_required
     def resolve_location_route():
         data = request.get_json(silent=True) or {}
         try:
@@ -66,7 +63,6 @@ def register_admin_routes(app):
         return jsonify({"lat": lat, "lng": lng, "label": label, "exact": exact})
 
     @bp.route(f"/{path}/")
-    @admin_required
     def dashboard():
         db = get_db()
         pin_rows = db.execute("SELECT * FROM pins ORDER BY created_at DESC, id DESC").fetchall()
@@ -103,7 +99,6 @@ def register_admin_routes(app):
         )
 
     @bp.route(f"/{path}/pins/new", methods=["POST"])
-    @admin_required
     def create_pin():
         db = get_db()
         lat = request.form.get("lat", type=float)
@@ -122,7 +117,6 @@ def register_admin_routes(app):
         return redirect(url_for("admin.dashboard"))
 
     @bp.route(f"/{path}/pins/<int:pin_id>/edit", methods=["POST"])
-    @admin_required
     def edit_pin(pin_id):
         db = get_db()
         lat = request.form.get("lat", type=float)
@@ -136,7 +130,6 @@ def register_admin_routes(app):
         return redirect(url_for("admin.dashboard"))
 
     @bp.route(f"/{path}/pins/<int:pin_id>/make-current", methods=["POST"])
-    @admin_required
     def make_current(pin_id):
         db = get_db()
         db.execute("UPDATE pins SET is_current = 0")
@@ -145,7 +138,6 @@ def register_admin_routes(app):
         return redirect(url_for("admin.dashboard"))
 
     @bp.route(f"/{path}/pins/<int:pin_id>/delete", methods=["POST"])
-    @admin_required
     def delete_pin(pin_id):
         db = get_db()
         photos = db.execute("SELECT file_path FROM photos WHERE pin_id = ?", (pin_id,)).fetchall()
@@ -160,7 +152,6 @@ def register_admin_routes(app):
         return redirect(url_for("admin.dashboard"))
 
     @bp.route(f"/{path}/pins/<int:pin_id>/messages/new", methods=["POST"])
-    @admin_required
     def add_message(pin_id):
         db = get_db()
         text = (request.form.get("text") or "").strip()
@@ -173,7 +164,6 @@ def register_admin_routes(app):
         return redirect(url_for("admin.dashboard"))
 
     @bp.route(f"/{path}/messages/<int:message_id>/delete", methods=["POST"])
-    @admin_required
     def delete_message(message_id):
         db = get_db()
         db.execute("DELETE FROM messages WHERE id = ?", (message_id,))
@@ -181,7 +171,6 @@ def register_admin_routes(app):
         return redirect(url_for("admin.dashboard"))
 
     @bp.route(f"/{path}/pins/<int:pin_id>/photos/new", methods=["POST"])
-    @admin_required
     def add_photo(pin_id):
         db = get_db()
         file = request.files.get("photo")
@@ -202,7 +191,6 @@ def register_admin_routes(app):
         return redirect(url_for("admin.dashboard"))
 
     @bp.route(f"/{path}/photos/<int:photo_id>/delete", methods=["POST"])
-    @admin_required
     def delete_photo(photo_id):
         db = get_db()
         row = db.execute("SELECT file_path FROM photos WHERE id = ?", (photo_id,)).fetchone()
@@ -215,7 +203,6 @@ def register_admin_routes(app):
         return redirect(url_for("admin.dashboard"))
 
     @bp.route(f"/{path}/stops/new", methods=["POST"])
-    @admin_required
     def create_stop():
         db = get_db()
         name = (request.form.get("name") or "").strip()
@@ -231,7 +218,6 @@ def register_admin_routes(app):
         return redirect(url_for("admin.dashboard"))
 
     @bp.route(f"/{path}/stops/<int:stop_id>/delete", methods=["POST"])
-    @admin_required
     def delete_stop(stop_id):
         db = get_db()
         db.execute("DELETE FROM planned_stops WHERE id = ?", (stop_id,))
@@ -239,7 +225,6 @@ def register_admin_routes(app):
         return redirect(url_for("admin.dashboard"))
 
     @bp.route(f"/{path}/comments/toggle", methods=["POST"])
-    @admin_required
     def toggle_comments():
         db = get_db()
         current = db.execute(
@@ -253,7 +238,6 @@ def register_admin_routes(app):
         return redirect(url_for("admin.dashboard"))
 
     @bp.route(f"/{path}/comments/<int:comment_id>/restore", methods=["POST"])
-    @admin_required
     def restore_comment(comment_id):
         db = get_db()
         db.execute("UPDATE comments SET status = 'visible' WHERE id = ?", (comment_id,))
@@ -261,7 +245,6 @@ def register_admin_routes(app):
         return redirect(url_for("admin.dashboard"))
 
     @bp.route(f"/{path}/comments/<int:comment_id>/delete", methods=["POST"])
-    @admin_required
     def delete_comment(comment_id):
         db = get_db()
         db.execute("UPDATE comments SET status = 'deleted' WHERE id = ?", (comment_id,))

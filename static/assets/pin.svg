@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 44" width="32" height="44">
-  <!-- placeholder pin icon; swap for handwriting/photo cutout later -->
-  <path d="M16 2 C7 2 2 9 2 16 C2 27 16 42 16 42 C16 42 30 27 30 16 C30 9 25 2 16 2 Z" fill="#2c5f2d"/>
-  <circle cx="16" cy="16" r="7" fill="#fdf3e7"/>
-</svg>

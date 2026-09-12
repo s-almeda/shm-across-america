@@ -10,54 +10,66 @@
 </head>
 <body>
   <header id="site-header">
-    <h1>shmtracker</h1>
-    <p id="tagline">a cross-country road trip, live</p>
+    <div class="header-row">
+      <h1>shm-across-america</h1>
+      <!-- Placeholder "about" tag. Swap the emoji/label for the real about
+           asset later; the click target and modal wiring stay the same. -->
+      <button id="about-trigger" class="cutout-btn about-note" type="button" title="about">
+        about
+      </button>
+    </div>
+    <p id="tagline">shmtracker</p>
   </header>
 
-  <!-- Placeholder "about" tag, sitting on the seam between header and map.
-       Swap the emoji/label for the real about asset later; the click
-       target and modal wiring stay the same. -->
-  <button id="about-trigger" class="about-note" type="button" title="About this trip">
-    📌 about this trip
-  </button>
+  <main id="stage">
+    <!-- The shadow lives on the shell, not the frame: clip-path clips an
+         element's own box-shadow away, but a filter on the parent applies
+         to the already-clipped child, so the shadow follows the torn edge. -->
+    <div id="map-shell">
+      <div id="map-frame">
+        <div id="map"></div>
 
-  <div id="map-frame">
-    <div id="map"></div>
+        <!-- Pin view: opens over the map when a pin is clicked. The map is
+             frozen underneath while this is up, so the header pin can be
+             positioned once (at --anchor-x/--anchor-y, where the camera put
+             the real pin) and stay aligned without any sync loop. -->
+        <div id="pin-view" class="pin-view" aria-hidden="true">
+          <!-- Postit at the top centre of the zoom view, with the paw
+               multiplied into its bottom-right corner so it reads as
+               drawn onto the paper. -->
+          <button id="write-note" class="cutout-btn write-note" type="button" title="Write shm a note">
+            <span class="write-note-plus">+</span>
+            <span class="write-note-label">write shm<br>a note!</span>
+            <img src="/assets/writing_hand.png" alt="">
+          </button>
 
-    <!-- Pin view: opens over the map when a pin is clicked. The map is
-         frozen underneath while this is up, so the header pin can be
-         positioned once (at --anchor-x/--anchor-y, where the camera put
-         the real pin) and stay aligned without any sync loop. -->
-    <div id="pin-view" class="pin-view" aria-hidden="true">
-      <div class="pin-view-backdrop"></div>
+          <button type="button" class="back-to-map" id="back-to-map">← back to map</button>
 
-      <button type="button" class="back-to-map" id="back-to-map">← back to map</button>
+          <div class="pin-view-header" id="pin-view-header">
+            <img class="pin-view-pin" src="/assets/tacks/tack_1.png" alt="">
+            <div class="pin-view-heading">
+              <div class="pin-view-place" id="pin-view-place"></div>
+              <div class="pin-view-dates" id="pin-view-dates"></div>
+            </div>
+          </div>
 
-      <div class="pin-view-header" id="pin-view-header">
-        <img class="pin-view-pin" src="/assets/pin.svg" alt="">
-        <div class="pin-view-heading">
-          <div class="pin-view-place" id="pin-view-place"></div>
-          <div class="pin-view-dates" id="pin-view-dates"></div>
+          <div class="post-grid" id="post-grid"></div>
         </div>
       </div>
-
-      <div class="post-grid" id="post-grid"></div>
     </div>
-  </div>
+  </main>
 
-  <!-- XP.css popup window: the add-comment form and the about text. -->
+  <!-- Index card holding the add-comment form and the about text. No
+       XP.css classes here on purpose -- those would drag the Windows
+       window chrome back in. -->
   <div class="popup-backdrop" id="asset-modal">
-    <div class="popup window piece-window" id="asset-window">
-      <div class="title-bar">
-        <div class="title-bar-text" id="asset-title">Note</div>
-        <div class="title-bar-controls">
-          <button aria-label="Close" class="popup-close"></button>
-        </div>
+    <div class="index-card" id="asset-window">
+      <div class="index-card-head">
+        <span class="index-card-title" id="asset-title">Note</span>
+        <button type="button" class="cutout-btn index-card-close popup-close" aria-label="Close">&#10005;</button>
       </div>
-      <div class="window-body" id="asset-body"></div>
-      <div class="status-bar">
-        <p class="status-bar-field" id="asset-status">&nbsp;</p>
-      </div>
+      <div class="index-card-body" id="asset-body"></div>
+      <div class="index-card-foot" id="asset-status">&nbsp;</div>
     </div>
   </div>
 

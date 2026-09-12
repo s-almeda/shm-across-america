@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 
 from flask import Flask
 
@@ -16,7 +17,22 @@ def create_app():
         template_folder="../templates",
     )
 
-    app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY") or os.urandom(32)
+    # Must be stable across restarts -- a random key per boot silently
+    # invalidates every session cookie, logging you out on every restart.
+    secret = os.environ.get("SECRET_KEY")
+    if not secret:
+        raise RuntimeError(
+            "SECRET_KEY is missing from .env. Generate one with:\n"
+            '  python -c "import secrets; print(secrets.token_hex(32))"'
+        )
+    app.config["SECRET_KEY"] = secret
+
+    # Stay logged in: a persistent cookie the browser keeps after closing,
+    # unreadable from JS.
+    app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=365)
+    app.config["SESSION_COOKIE_HTTPONLY"] = True
+    app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+
     app.config["ADMIN_PASSWORD"] = os.environ["ADMIN_PASSWORD"]
     app.config["TWILIO_ACCOUNT_SID"] = os.environ.get("TWILIO_ACCOUNT_SID")
     app.config["TWILIO_AUTH_TOKEN"] = os.environ.get("TWILIO_AUTH_TOKEN")
