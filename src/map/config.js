@@ -23,16 +23,42 @@ export const PIN_ANCHOR = { x: 78, y: 92 }; // where a focused pin parks
  * doubles as the heading's pin. The car is already big, so it stays at 1.
  */
 export const TOOLTIP_GAP = 8; // clearance between the art's top and the nib
+const BACK_BTN_STACK = 52; // gap + back-to-map button + gap, above the art
+
+export function pinIconFor(pin) {
+  return pin.is_current ? "car" : "tack";
+}
+
+/* How far an icon's art reaches beyond its coordinate: h*ay / w*ax from the
+   anchor, less however far dx/dy shifts it back. */
+export function artReach(iconKey) {
+  const art = ICONS[iconKey];
+  return {
+    up: art.h * art.ay - (art.dy ?? 0),
+    left: art.w * art.ax - (art.dx ?? 0),
+  };
+}
+
+/* A tooltip opens above the pin, so it has to clear that pin's own art.
+   The car reaches ~74px up, a tack ~15px. */
+export function tooltipOffsetY(iconKey) {
+  return -(artReach(iconKey).up + TOOLTIP_GAP);
+}
 
 /*
- * A tooltip opens above the pin, so how high it has to sit depends on how far
- * that pin's art reaches above its coordinate -- h*ay from the anchor, plus
- * however far dy lifts it. The car reaches ~76px up, a tack ~15px.
+ * Where a focused pin parks in the frame. Tall or wide art needs the camera
+ * placed higher and further left, so the art lands lower and further right --
+ * otherwise the car runs off the frame's left edge and sits under the
+ * back-to-map button. Small pins keep the default, so this only moves the
+ * camera for art big enough to need it.
  */
-export function tooltipOffsetY(iconKey) {
-  const art = ICONS[iconKey];
-  const reach = art.h * art.ay - (art.dy ?? 0);
-  return -(reach + TOOLTIP_GAP);
+export function focusAnchor(iconKey) {
+  const reach = artReach(iconKey);
+  return {
+    x: Math.max(PIN_ANCHOR.x, Math.round(reach.left + 12)),
+    y: Math.max(PIN_ANCHOR.y, Math.round(reach.up + BACK_BTN_STACK)),
+    up: Math.round(reach.up),
+  };
 }
 
 export const ICONS = {

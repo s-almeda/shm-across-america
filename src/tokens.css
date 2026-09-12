@@ -2,7 +2,7 @@
 
 :root {
   /* paper + ink */
-  --desk: #9c8b6f;
+  --desk: #5e5648;
   --paper: #fffdf5;
   --paper-header: #fffdf8;
   --paper-note: #fdfcf6;
@@ -14,8 +14,8 @@
   --ink-hand: rgba(0, 0, 0, 0.76);
   --ink-stamp-green: #5f6b52;
   --ink-stamp-yellow: #6b6b4a;
-  --flag-red: #c0392b;
-  --route-red: #c0392b;
+  --flag-red: #ba5f0f;
+  --route-red: #c2660f;
 
   --font-ui: "Pixelated MS Sans Serif", "MS Sans Serif", system-ui, sans-serif;
   --font-hand: "Pangolin", "Comic Sans MS", cursive;
@@ -55,9 +55,11 @@
   --shadow-peek: 0 1px 2px var(--shadow-ink);
   --lift-ease: transform 0.16s ease-out, box-shadow 0.16s ease-out;
 
-  /* where a focused pin parks inside the frame; also set inline by JS */
+  /* Where a focused pin parks, and how far its art rises above that point.
+     Both are set inline per pin by PinView, since they depend on its icon. */
   --anchor-x: 78px;
   --anchor-y: 92px;
+  --pin-reach: 16px;
 }
 
 /*
