@@ -22,8 +22,9 @@ export const PIN_ANCHOR = { x: 78, y: 92 }; // where a focused pin parks
  * focusScale: how much bigger the art gets while its pin is open, where it
  * doubles as the heading's pin. The car is already big, so it stays at 1.
  */
-export const TOOLTIP_GAP = 8; // clearance between the art's top and the nib
+export const TOOLTIP_GAP = 8; // clearance between the art and a bubble's nib
 const BACK_BTN_STACK = 52; // gap + back-to-map button + gap, above the art
+const FOCUS_EDGE_GAP = 28; // clearance between a focused pin's art and the frame edge
 
 export function pinIconFor(pin) {
   return pin.is_current ? "car" : "tack";
@@ -36,7 +37,18 @@ export function artReach(iconKey) {
   return {
     up: art.h * art.ay - (art.dy ?? 0),
     left: art.w * art.ax - (art.dx ?? 0),
+    right: art.w * (1 - art.ax) + (art.dx ?? 0),
   };
+}
+
+/*
+ * How far right of the anchor the place chip starts, so it clears the art at
+ * the size that art takes while focused. A tack is small but grows 1.7x; the
+ * car doesn't grow but is far wider to the right of its point.
+ */
+export function headerOffsetX(iconKey) {
+  const art = ICONS[iconKey];
+  return Math.round(artReach(iconKey).right * (art.focusScale ?? 1) + TOOLTIP_GAP);
 }
 
 /* A tooltip opens above the pin, so it has to clear that pin's own art.
@@ -55,7 +67,7 @@ export function tooltipOffsetY(iconKey) {
 export function focusAnchor(iconKey) {
   const reach = artReach(iconKey);
   return {
-    x: Math.max(PIN_ANCHOR.x, Math.round(reach.left + 12)),
+    x: Math.max(PIN_ANCHOR.x, Math.round(reach.left + FOCUS_EDGE_GAP)),
     y: Math.max(PIN_ANCHOR.y, Math.round(reach.up + BACK_BTN_STACK)),
     up: Math.round(reach.up),
   };

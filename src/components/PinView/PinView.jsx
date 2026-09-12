@@ -1,7 +1,7 @@
 import PostGrid from "../PostGrid/PostGrid";
 import WriteNoteSticker from "../WriteNoteSticker/WriteNoteSticker";
 import { fmtDateRange } from "../../lib/format";
-import { focusAnchor, pinIconFor } from "../../map/config";
+import { focusAnchor, headerOffsetX, pinIconFor } from "../../map/config";
 import "./PinView.css";
 
 export default function PinView({
@@ -17,11 +17,13 @@ export default function PinView({
      the anchor -- where the camera parked the real pin -- and stay aligned
      with no sync loop. --pin-reach is how far this pin's art rises above the
      anchor, so the back button can clear the art rather than the point. */
-  const spot = focusAnchor(pinIconFor(pin));
+  const icon = pinIconFor(pin);
+  const spot = focusAnchor(icon);
   const anchor = {
     "--anchor-x": `${spot.x}px`,
     "--anchor-y": `${spot.y}px`,
     "--pin-reach": `${spot.up}px`,
+    "--header-offset": `${headerOffsetX(icon)}px`,
   };
 
   return (

@@ -8,7 +8,7 @@ export default function SiteHeader({ onAbout }) {
         <h1 className="site-header__title">shm-across-america 2026!</h1>
         <AboutSticker onClick={onAbout} />
       </div>
-      <p className="site-header__tagline">virtual shmtracker</p>
+      <p className="site-header__tagline">hello friends ty for visiting the virtual shmtracker!!</p>
     </header>
   );
 }

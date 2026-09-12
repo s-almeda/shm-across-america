@@ -29,7 +29,7 @@
    scroll underneath it. Carries its own contrast -- the map isn't dimmed. */
 .pin-view__header {
   position: absolute;
-  left: calc(var(--anchor-x) + 30px);
+  left: calc(var(--anchor-x) + var(--header-offset));
   top: var(--anchor-y);
   transform: translateY(-50%);
   z-index: 6;
