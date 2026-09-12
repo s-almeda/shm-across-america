@@ -10,8 +10,10 @@
    rises ~74px above its point and would otherwise sit under this. */
 .pin-view__back {
   position: absolute;
-  top: calc(var(--anchor-y) - var(--pin-reach) - 3rem);
-  left: calc(var(--anchor-x) - var(--pin-reach-left));
+  /* Fixed across every icon (see BACK_BTN_SPOT) so it holds still while the
+     camera flies from one kind of pin to another. */
+  top: calc(var(--back-top) - 3rem);
+  left: var(--back-left);
   z-index: 3;
   font-family: var(--font-ui);
   font-size: 0.85rem;

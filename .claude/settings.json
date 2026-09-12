@@ -15,7 +15,9 @@
       "Bash(venv/bin/python -c ' *)",
       "Bash(DATABASE_PATH=/private/tmp/claude-502/-Users-loaner1-main-Projects-shm-across-america/61d40463-dce6-4335-b151-245c1277e114/scratchpad/old.db venv/bin/python -c ' *)",
       "Bash(node -e ' *)",
-      "Bash(DATABASE_PATH=/private/tmp/claude-502/-Users-loaner1-main-Projects-shm-across-america/61d40463-dce6-4335-b151-245c1277e114/scratchpad/edit.db venv/bin/python -c ' *)"
+      "Bash(DATABASE_PATH=/private/tmp/claude-502/-Users-loaner1-main-Projects-shm-across-america/61d40463-dce6-4335-b151-245c1277e114/scratchpad/edit.db venv/bin/python -c ' *)",
+      "Bash(sed 's|^export ||' src/map/config.js)",
+      "Bash(node --input-type=module -e ' *)"
     ]
   }
 }

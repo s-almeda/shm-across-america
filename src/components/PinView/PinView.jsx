@@ -1,7 +1,7 @@
 import PostGrid from "../PostGrid/PostGrid";
 import PinSticker from "../PinSticker/PinSticker";
 import WriteNoteSticker from "../WriteNoteSticker/WriteNoteSticker";
-import { focusAnchor, headerOffsetX } from "../../map/config";
+import { BACK_BTN_SPOT, focusAnchor, headerOffsetX } from "../../map/config";
 import "./PinView.css";
 
 export default function PinView({
@@ -23,16 +23,16 @@ export default function PinView({
 }) {
   /* The map is frozen underneath, so the header pin can be placed once at
      the anchor -- where the camera parked the real pin -- and stay aligned
-     with no sync loop. --pin-reach is how far this pin's art rises above the
-     anchor, so the back button can clear the art rather than the point. */
+     with no sync loop. */
   const spot = focusAnchor(icon);
   const anchor = {
     "--anchor-x": `${spot.x}px`,
     "--anchor-y": `${spot.y}px`,
-    "--pin-reach": `${spot.up}px`,
-    "--pin-reach-left": `${spot.left}px`,
     "--pin-center-y": `${spot.centerY}px`,
     "--header-offset": `${headerOffsetX(icon)}px`,
+    // Not icon-derived: the back button holds one spot for every pin.
+    "--back-top": `${BACK_BTN_SPOT.top}px`,
+    "--back-left": `${BACK_BTN_SPOT.left}px`,
   };
 
   return (

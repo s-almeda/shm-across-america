@@ -88,10 +88,12 @@
      Both are set inline per pin by PinView, since they depend on its icon. */
   --anchor-x: 78px;
   --anchor-y: 60px;
-  --pin-reach: 16px;
-  --pin-reach-left: 22px;
   --pin-center-y: 0px;
   --header-offset: 30px;
+  /* The back button's fixed corner -- the same for every icon, so it doesn't
+     slide across the frame mid-flight. Set from BACK_BTN_SPOT in config.js. */
+  --back-top: 68px;
+  --back-left: 13px;
 }
 
 /*

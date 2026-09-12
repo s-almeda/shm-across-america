@@ -96,6 +96,26 @@ export const ICONS = {
 };
 
 /*
+ * One resting place for the back-to-map button, shared by every icon.
+ *
+ * Deriving it per icon put it tight against whichever art was open, which
+ * meant it jumped across the frame when stepping from a tack to the car --
+ * the one piece of chrome that stays mounted through a flight, visibly moving
+ * during it. So it takes the most generous position any icon asks for, which
+ * by definition clears all of them, and then never moves.
+ */
+export const BACK_BTN_SPOT = (() => {
+  let top = Infinity;
+  let left = Infinity;
+  for (const key of Object.keys(ICONS)) {
+    const spot = focusAnchor(key);
+    top = Math.min(top, spot.y - spot.up);
+    left = Math.min(left, spot.x - spot.left);
+  }
+  return { top: Math.round(top), left: Math.round(left) };
+})();
+
+/*
  * The four orange pins are hand-drawn, so a planned stop picks one instead of
  * the whole route looking stamped. Sizes are each source file at half scale
  * (the files differ by a pixel or two); ICONS.pin still owns the geometry, so
