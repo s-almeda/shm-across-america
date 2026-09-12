@@ -25,11 +25,18 @@ export default function MapCanvas({ onReady, pinOpen, reading, children }) {
       zoomSnap: 0,
       wheelPxPerZoomLevel: 5,
       wheelDebounceTime: 20,
+      // Without the zoom animation, tiles reset often; fading each new one in
+      // from transparent is what reads as the map blinking.
+      fadeAnimation: false,
     }).setView([39.5, -98.35], ZOOM_OVERVIEW);
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "&copy; OpenStreetMap contributors",
       maxZoom: ZOOM_DETAIL,
+      // Hold on to more off-screen tiles so crossing a zoom level has
+      // something to show while the new level loads.
+      keepBuffer: 6,
+      updateWhenZooming: false,
     }).addTo(map);
 
     /*

@@ -15,7 +15,7 @@ def _print_banner(port):
     lines = [
         "",
         "=" * 62,
-        "  SHM Across America -- dev server",
+        "  shmtracker -- dev server",
         "=" * 62,
         f"  Map:            {base}/",
         f"  Admin login:    {base}/{c['ADMIN_PATH']}/login",

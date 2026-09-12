@@ -1,3 +1,22 @@
+/* Comic Relief -- a free Comic Sans stand-in with a real bold, so bold text
+   is a designed face rather than one the browser smears. Self-hosted (latin
+   subset) to match the other fonts here and avoid a third-party request. */
+@font-face {
+  font-family: "Comic Relief";
+  src: url("/assets/fonts/comic-relief-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Comic Relief";
+  src: url("/assets/fonts/comic-relief-700.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 @font-face {
   font-family: "Pangolin";
   src: url("/assets/Pangolin-Regular.ttf") format("truetype");

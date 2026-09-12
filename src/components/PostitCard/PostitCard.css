@@ -32,6 +32,12 @@
   color: var(--ink-stamp-yellow);
 }
 
+/* Inherits the stamp colour unless the commenter picked one. */
+.postit-card__author {
+  font-size: var(--author-size);
+  font-weight: bold;
+}
+
 /* Never truncated -- a long post scrolls inside its own card. The ink is
    semi-transparent black so it reads as soaked into the paper. */
 .postit-card__body {

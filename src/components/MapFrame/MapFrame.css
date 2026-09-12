@@ -16,26 +16,35 @@
 }
 
 /*
- * EDGE SHAPE -- edit --map-shape. Points are x y percentages clockwise from
- * the top-left; within ~1% of the edge clips almost nothing, push a point
- * inward (4%) to bite a bigger chunk out of that side.
- * Drawing the shape in Figma instead: see docs/NOTES.md.
+ * EDGE SHAPE -- a drawn alpha mask, so the torn edge can be as ragged as the
+ * artwork rather than a polygon's straight segments. Swap the file to change
+ * the shape; opaque pixels are the paper, transparent ones are cut away.
+ * mask-size 100% 100% stretches it to the frame at any size.
  */
 .map-frame {
-  --map-shape: polygon(
-    0.4% 1.2%, 14% 0%, 35% 0.8%, 58% 0%, 81% 0.6%, 99.6% 1.2%,
-    100% 24%, 99.4% 47%, 100% 70%, 99.4% 91%, 99.6% 98.8%,
-    83% 100%, 60% 99.2%, 40% 100%, 18% 99.4%, 0.4% 98.8%,
-    0.6% 74%, 0% 50%, 0.6% 27%
-  );
-
   position: relative;
   max-width: 1000px;
   margin: 1.5rem auto;
   aspect-ratio: 16 / 10;
   background: var(--paper-map);
-  clip-path: var(--map-shape);
   overflow: hidden;
+
+  -webkit-mask-image: url("/assets/textures/map_clipping_mask.png");
+  mask-image: url("/assets/textures/map_clipping_mask.png");
+  /* Oversized on purpose: at exactly 100% the torn edge bit into the
+     write-a-note sticker in the bottom-right corner. Scaling the mask past
+     the frame pushes its ragged border outside, so the corners stay whole --
+     at the cost of some edge detail being cropped away. */
+  -webkit-mask-size: 108% 112%;
+  mask-size: 108% 112%;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  /* Ask for nearest-neighbour so a scaled-up mask keeps hard pixel steps
+     instead of a feathered edge. Honoured for masks in Chromium; Safari and
+     Firefox may still smooth it. */
+  image-rendering: pixelated;
 }
 
 /* Cardstock grain multiplied over the map so it reads as printed paper.

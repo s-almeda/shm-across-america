@@ -13,7 +13,9 @@
   padding: 0.9rem 1rem 2rem;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  /* Cross axis of a column is horizontal: this is what left-aligns the
+     text. The + opts back out with align-self below. */
+  align-items: flex-start;
   justify-content: center;
   gap: 0.1rem;
   /* A blank sheet of paper, not a control. */
@@ -23,7 +25,9 @@
   background-position: center;
 }
 
+/* Centred while the label beside it stays left. */
 .write-note-sticker__plus {
+  align-self: center;
   font-family: var(--font-hand);
   font-size: 1.5rem;
   line-height: 1;
@@ -34,7 +38,7 @@
   font-family: var(--font-hand);
   font-size: 0.88rem;
   line-height: 1.2;
-  text-align: center;
+  text-align: left;
   color: rgba(0, 0, 0, 0.76);
 }
 
@@ -52,6 +56,7 @@
 @media (max-width: 640px) {
   .write-note-sticker {
     padding: 0.6rem 0.6rem 1.5rem;
+    margin-bottom: 1.5rem;
   }
 
   .write-note-sticker__plus {

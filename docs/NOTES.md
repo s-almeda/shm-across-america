@@ -1,12 +1,15 @@
 # Notes
 
-## Using a Figma shape for the map edge
+## The map edge shape
 
-The quick knob is `--map-shape` on `.map-frame` (see
-`src/components/MapFrame/MapFrame.css`): x/y percentages, so it stretches with
-the frame at any size. Fine for a rough torn edge.
+**In use:** an alpha mask, `public/assets/textures/map_clipping_mask.png`,
+applied in `src/components/MapFrame/MapFrame.css`. Opaque pixels are the
+paper, transparent ones are cut away; `mask-size: 100% 100%` stretches it to
+the frame at any size. Replace the file to change the shape.
 
-For an actual drawn shape, two options.
+The previous approach was a `clip-path` polygon in percentages. It's gone, but
+recorded below along with the SVG option, in case a hard-edged vector shape is
+wanted again.
 
 ### 1. Vector, crisp edges — an SVG clipPath in normalised coordinates
 

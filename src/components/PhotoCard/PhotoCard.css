@@ -1,14 +1,21 @@
-/* Portrait, so narrower than its column -- but the same height as a postit,
-   which is what keeps the grid's rows even. */
+/*
+ * Every dimension is derived so the picture is exactly square and the caption
+ * is exactly N lines, while the card keeps the shared --card-h the grid needs
+ * for even rows. Nothing here is a flexible size, so nothing can disagree
+ * about how tall the card really is.
+ */
 .photo-card {
+  --cap-h: calc(var(--photo-cap-lines) * var(--photo-cap-size) * var(--photo-cap-lh));
+  --img: calc(var(--card-h) - 2 * var(--photo-pad) - var(--cap-h) - var(--photo-cap-gap));
+
   justify-self: center;
   display: flex;
   flex-direction: column;
-  width: var(--photo-w);
+  width: calc(var(--img) + 2 * var(--photo-pad));
   max-width: 100%;
   height: var(--card-h);
   background: #fff;
-  padding: 0.35rem 0.35rem 0.45rem;
+  padding: var(--photo-pad);
   box-shadow: var(--shadow-rest);
   transform: rotate(var(--rot, 0deg));
   transition: var(--lift-ease);
@@ -21,24 +28,28 @@
   box-shadow: var(--shadow-lift);
 }
 
-/* The card's box sets the picture's shape; the image just fills what's left
-   after the caption, so no aspect-ratio to disagree with the grid. */
 .photo-card__img {
   display: block;
-  flex: 1;
-  min-height: 0;
-  width: 100%;
+  flex: none;
+  width: var(--img);
+  height: var(--img);
   object-fit: cover;
   background: #ddd;
   border: 1px solid #3a3a3a70;
 }
 
+/* Handwritten, like a caption inked onto the polaroid's white band. Capped at
+   --photo-cap-lines and scrolls past that, so a long one can't change the
+   card's height. */
 .photo-card__caption {
   flex: none;
-  margin-top: 0.3rem;
-  font-family: var(--font-ui);
-  font-size: 0.65rem;
-  line-height: 1.2;
+  height: var(--cap-h);
+  overflow-y: auto;
+  margin-top: var(--photo-cap-gap);
+  font-family: var(--font-hand);
+  font-size: var(--photo-cap-size);
+  line-height: var(--photo-cap-lh);
   color: rgba(0, 0, 0, 0.55);
   text-align: center;
+  scrollbar-width: thin;
 }

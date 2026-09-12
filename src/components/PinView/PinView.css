@@ -11,7 +11,7 @@
 .pin-view__back {
   position: absolute;
   top: calc(var(--anchor-y) - var(--pin-reach) - 2.6rem);
-  left: calc(var(--anchor-x) - 22px);
+  left: calc(var(--anchor-x) - var(--pin-reach-left));
   z-index: 3;
   font-family: var(--font-ui);
   font-size: 0.85rem;
@@ -24,13 +24,17 @@
   cursor: pointer;
 }
 
-/* Sits just right of the anchor, vertically centred on it, so the real
-   marker parked there reads as this heading's pin. Above .post-grid so cards
-   scroll underneath it. Carries its own contrast -- the map isn't dimmed. */
+/* Sits just right of the anchor, vertically centred on it, so the real marker
+   parked there reads as this heading's pin. Carries its own contrast -- the
+   map isn't dimmed.
+
+   Above .post-grid (2), so notes scroll underneath it. With two columns the
+   notes sit in the middle of the frame and rarely reach the car at all, so
+   the chip is the only thing they pass behind. */
 .pin-view__header {
   position: absolute;
   left: calc(var(--anchor-x) + var(--header-offset));
-  top: var(--anchor-y);
+  top: calc(var(--anchor-y) + var(--pin-center-y));
   transform: translateY(-50%);
   z-index: 6;
   background: var(--paper);
@@ -82,6 +86,56 @@
   margin-top: -7px;
 }
 
+/* Flank the notes: jump to the previous / next stop on the trip. Above the
+   grid (2) so they stay clickable, below the write-note sticker (5). */
+/* A cutout, not a boxed control -- same treatment as the pins. */
+.pin-view__step {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 4;
+  appearance: none;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: var(--lift-ease);
+}
+
+.pin-view__point {
+  display: block;
+  width: var(--point-w);
+  height: var(--point-h);
+  image-rendering: pixelated;
+  filter: drop-shadow(var(--shadow-art));
+}
+
+/* The art points right; the previous button is the same hand mirrored. */
+.pin-view__step.is-prev .pin-view__point {
+  transform: scaleX(-1);
+}
+
+/* Well inside the frame: the torn mask eats the outer few percent, so
+   anything closer to the edge gets clipped. */
+.pin-view__step.is-prev {
+  left: 3rem;
+}
+
+.pin-view__step.is-next {
+  right: 3rem;
+}
+
+.pin-view__step:hover:not(:disabled) {
+  transform: translateY(-50%) scale(1.1);
+}
+
+/* Dimmed in place rather than hidden, so the pair doesn't jump around at the
+   two ends of the trip. */
+.pin-view__step:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
 .pin-view__place {
   font-family: var(--font-ui);
   font-size: 1.15rem;
@@ -97,5 +151,13 @@
 @media (max-width: 640px) {
   .pin-view__place {
     font-size: 1rem;
+  }
+
+  .pin-view__step.is-prev {
+    left: 1.1rem;
+  }
+
+  .pin-view__step.is-next {
+    right: 1.1rem;
   }
 }

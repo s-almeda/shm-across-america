@@ -2,7 +2,7 @@ import "./PostitCard.css";
 
 const FLAG_LABEL = "Flag this comment";
 
-export default function PostitCard({ tone, stamp, body, rot, onFlag }) {
+export default function PostitCard({ tone, author, authorColor, stamp, body, rot, onFlag }) {
   return (
     <div className={`postit-card is-${tone}`} style={{ "--rot": rot }}>
       {onFlag && (
@@ -19,7 +19,12 @@ export default function PostitCard({ tone, stamp, body, rot, onFlag }) {
           </svg>
         </button>
       )}
-      <div className="postit-card__stamp">{stamp}</div>
+      <div className="postit-card__stamp">
+        <span className="postit-card__author" style={authorColor ? { color: authorColor } : undefined}>
+          {author}
+        </span>{" "}
+        {stamp}
+      </div>
       <p className="postit-card__body">{body}</p>
     </div>
   );

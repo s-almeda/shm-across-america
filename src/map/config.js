@@ -23,7 +23,7 @@ export const PIN_ANCHOR = { x: 78, y: 92 }; // where a focused pin parks
  * doubles as the heading's pin. The car is already big, so it stays at 1.
  */
 export const TOOLTIP_GAP = 8; // clearance between the art and a bubble's nib
-const BACK_BTN_STACK = 52; // gap + back-to-map button + gap, above the art
+const BACK_BTN_STACK = 68; // gap + back-to-map button + gap, above the art
 const FOCUS_EDGE_GAP = 28; // clearance between a focused pin's art and the frame edge
 
 export function pinIconFor(pin) {
@@ -36,6 +36,7 @@ export function artReach(iconKey) {
   const art = ICONS[iconKey];
   return {
     up: art.h * art.ay - (art.dy ?? 0),
+    down: art.h * (1 - art.ay) + (art.dy ?? 0),
     left: art.w * art.ax - (art.dx ?? 0),
     right: art.w * (1 - art.ax) + (art.dx ?? 0),
   };
@@ -66,10 +67,21 @@ export function tooltipOffsetY(iconKey) {
  */
 export function focusAnchor(iconKey) {
   const reach = artReach(iconKey);
+  const scale = ICONS[iconKey].focusScale ?? 1;
   return {
     x: Math.max(PIN_ANCHOR.x, Math.round(reach.left + FOCUS_EDGE_GAP)),
     y: Math.max(PIN_ANCHOR.y, Math.round(reach.up + BACK_BTN_STACK)),
     up: Math.round(reach.up),
+    // How far left the art extends once focused -- the back button
+    // left-aligns with this, not with the coordinate.
+    left: Math.round(reach.left * scale),
+    /*
+     * Offset from the coordinate to the art's own vertical middle, so the
+     * place chip sits beside the art rather than beside the point. Zero for a
+     * centre-anchored tack; ~25px up for the car, whose point is near its
+     * wheels.
+     */
+    centerY: Math.round(((reach.down - reach.up) * scale) / 2),
   };
 }
 

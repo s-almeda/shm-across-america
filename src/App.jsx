@@ -21,7 +21,7 @@ export default function App() {
   const [trip, setTrip] = useState(null);
   const [openPinId, setOpenPinId] = useState(null);
   const [flying, setFlying] = useState(false);
-  const [photoUrl, setPhotoUrl] = useState(null);
+  const [photo, setPhoto] = useState(null); // { url, caption }
   const [modal, setModal] = useState(null); // "about" | "comment" | "comments-off"
 
   const reload = useCallback(async () => setTrip(await fetchTrip()), []);
@@ -33,7 +33,10 @@ export default function App() {
   const openPin = trip?.pins.find((p) => p.id === openPinId) ?? null;
   const items = useMemo(() => (openPin ? buildItems(openPin) : []), [openPin]);
 
-  usePinCamera(map, openPin, () => setFlying(false));
+  // Set before the pin changes, so the camera knows whether this move is a
+  // fly-in from the map or a cut between stops.
+  const cutToPin = useRef(false);
+  usePinCamera(map, openPin, () => setFlying(false), cutToPin);
 
   /* Park the camera on the current pin the first time data lands -- later
      reloads must not yank the view out from under whoever's browsing. */
@@ -54,23 +57,46 @@ export default function App() {
       setOpenPinId(null);
       return;
     }
+    cutToPin.current = false;
     setOpenPinId(pin.id);
+    setFlying(true);
+  }
+
+  /* Step along the trip in order. `pins` comes back oldest-first, so -1 is
+     the previous stop and +1 the next. */
+  const pins = trip?.pins ?? [];
+  const openIndex = pins.findIndex((p) => p.id === openPinId);
+  const hasPrev = openIndex > 0;
+  const hasNext = openIndex >= 0 && openIndex < pins.length - 1;
+
+  function step(delta) {
+    const next = pins[openIndex + delta];
+    if (!next) return;
+    cutToPin.current = true;
+    setOpenPinId(next.id);
     setFlying(true);
   }
 
   useEffect(() => {
     function onKey(e) {
-      if (e.key !== "Escape") return;
-      if (photoUrl) setPhotoUrl(null);
-      else if (modal) setModal(null);
-      else if (pinOpen) setOpenPinId(null);
+      if (e.key === "Escape") {
+        if (photo) setPhoto(null);
+        else if (modal) setModal(null);
+        else if (pinOpen) setOpenPinId(null);
+        return;
+      }
+      // Arrows walk the trip, but only while the notes are the thing on screen.
+      if (!pinOpen || modal || photo) return;
+      if (e.key === "ArrowLeft") step(-1);
+      else if (e.key === "ArrowRight") step(1);
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [photoUrl, modal, pinOpen]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [photo, modal, pinOpen, openIndex, pins.length]);
 
-  async function submitComment({ author_name, body }) {
-    await postComment({ pin_id: openPinId, author_name, body });
+  async function submitComment({ author_name, author_color, body }) {
+    await postComment({ pin_id: openPinId, author_name, author_color, body });
     setModal(null);
     await reload();
   }
@@ -117,6 +143,7 @@ export default function App() {
                     icon={pin.is_current ? "car" : "tack"}
                     peeks={pinItems.slice(-4).map((i) => i.kind)}
                     count={pinItems.length}
+                    seed={`pin${pin.id}`}
                     focused={openPinId === pin.id}
                     clickable
                   />
@@ -146,8 +173,12 @@ export default function App() {
             commentsEnabled={trip.comments_enabled}
             onBack={() => setOpenPinId(null)}
             onWriteNote={() => setModal(trip.comments_enabled ? "comment" : "comments-off")}
-            onOpenPhoto={setPhotoUrl}
+            onOpenPhoto={setPhoto}
             onFlag={flag}
+            onPrev={() => step(-1)}
+            onNext={() => step(1)}
+            hasPrev={hasPrev}
+            hasNext={hasNext}
           />
         )}
       </MapFrame>
@@ -159,7 +190,7 @@ export default function App() {
       )}
 
       {modal === "comment" && (
-        <IndexCardModal title="New comment" onClose={() => setModal(null)}>
+        <IndexCardModal title="Leave a note for shm!" onClose={() => setModal(null)}>
           <CommentForm onSubmit={submitComment} />
         </IndexCardModal>
       )}
@@ -170,7 +201,9 @@ export default function App() {
         </IndexCardModal>
       )}
 
-      {photoUrl && <PhotoLightbox url={photoUrl} onClose={() => setPhotoUrl(null)} />}
+      {photo && (
+        <PhotoLightbox url={photo.url} caption={photo.caption} onClose={() => setPhoto(null)} />
+      )}
     </>
   );
 }

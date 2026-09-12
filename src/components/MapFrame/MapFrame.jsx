@@ -1,8 +1,9 @@
 import "./MapFrame.css";
 
 /* The shaped paper the map lives inside. The shadow sits on the shell, not
-   the frame: clip-path is applied after an element's own shadow, so a shadow
-   on the frame gets clipped away with everything else. */
+   the frame: a mask applies to the element's own shadow too, so a shadow on
+   the frame would be cut away with everything else. On the parent it traces
+   the already-masked child, following the torn edge. */
 export default function MapFrame({ pinOpen, children }) {
   return (
     <main className="map-frame__stage">

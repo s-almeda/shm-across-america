@@ -1,16 +1,17 @@
 import { useLayoutEffect, useRef } from "react";
 import PhotoCard from "../PhotoCard/PhotoCard";
 import PostitCard from "../PostitCard/PostitCard";
-import { fmtDate, fmtPostStamp, itemKey, stableRotation } from "../../lib/format";
+import { fmtDate, fmtStampTail, itemKey, stableRotation } from "../../lib/format";
 import { flipIn } from "./flipIn";
 import "./PostGrid.css";
 
-export default function PostGrid({ items, flipKey, onOpenPhoto, onFlag }) {
+export default function PostGrid({ items, flipKey, anchor, onOpenPhoto, onFlag }) {
   const ref = useRef(null);
 
   // Fans out when a pin opens, not on every later re-render.
   useLayoutEffect(() => {
-    flipIn(ref.current);
+    flipIn(ref.current, anchor);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [flipKey]);
 
   return (
@@ -20,13 +21,15 @@ export default function PostGrid({ items, flipKey, onOpenPhoto, onFlag }) {
         const rot = stableRotation(key);
 
         if (item.kind === "photo") {
+          // Same text on the card and in the lightbox.
+          const caption = item.caption || fmtDate(item.created_at);
           return (
             <PhotoCard
               key={key}
               url={item.url}
-              caption={item.caption || fmtDate(item.created_at)}
+              caption={caption}
               rot={rot}
-              onClick={() => onOpenPhoto(item.url)}
+              onClick={() => onOpenPhoto({ url: item.url, caption })}
             />
           );
         }
@@ -36,7 +39,9 @@ export default function PostGrid({ items, flipKey, onOpenPhoto, onFlag }) {
           <PostitCard
             key={key}
             tone={isNote ? "note" : "comment"}
-            stamp={fmtPostStamp(item.created_at, isNote ? "shm" : item.author_name)}
+            author={isNote ? "shm" : item.author_name}
+            authorColor={isNote ? null : item.author_color}
+            stamp={fmtStampTail(item.created_at)}
             body={isNote ? item.text : item.body}
             rot={rot}
             onFlag={isNote ? null : () => onFlag(item.id)}

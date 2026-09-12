@@ -1,8 +1,19 @@
+import re
+
 from flask import Blueprint, current_app, jsonify, request
 
 from .db import get_db, now_iso
 
 bp = Blueprint("api", __name__, url_prefix="/api")
+
+HEX_COLOR = re.compile(r"^#[0-9a-fA-F]{6}$")
+
+
+def clean_color(value):
+    """Only a plain 6-digit hex gets stored -- this string is interpolated
+    into a style attribute on the map."""
+    value = (value or "").strip()
+    return value.lower() if HEX_COLOR.match(value) else None
 
 
 def _setting(db, key, default=None):
@@ -25,7 +36,7 @@ def trip():
             (pin["id"],),
         ).fetchall()
         comments = db.execute(
-            "SELECT id, author_name, body, created_at FROM comments WHERE pin_id = ? AND status = 'visible' ORDER BY created_at ASC",
+            "SELECT id, author_name, author_color, body, created_at FROM comments WHERE pin_id = ? AND status = 'visible' ORDER BY created_at ASC",
             (pin["id"],),
         ).fetchall()
 
@@ -50,6 +61,7 @@ def trip():
                     {
                         "id": c["id"],
                         "author_name": c["author_name"],
+                        "author_color": c["author_color"],
                         "body": c["body"],
                         "created_at": c["created_at"],
                     }
@@ -82,12 +94,12 @@ def list_comments():
     pin_id = request.args.get("pin_id", type=int)
     if pin_id is not None:
         rows = db.execute(
-            "SELECT id, pin_id, author_name, body, created_at FROM comments WHERE pin_id = ? AND status = 'visible' ORDER BY created_at ASC",
+            "SELECT id, pin_id, author_name, author_color, body, created_at FROM comments WHERE pin_id = ? AND status = 'visible' ORDER BY created_at ASC",
             (pin_id,),
         ).fetchall()
     else:
         rows = db.execute(
-            "SELECT id, pin_id, author_name, body, created_at FROM comments WHERE status = 'visible' ORDER BY created_at ASC"
+            "SELECT id, pin_id, author_name, author_color, body, created_at FROM comments WHERE status = 'visible' ORDER BY created_at ASC"
         ).fetchall()
     return jsonify([dict(r) for r in rows])
 
@@ -110,10 +122,12 @@ def post_comment():
     if not author_name or not body:
         return jsonify({"error": "author_name and body are required"}), 400
 
+    author_color = clean_color(data.get("author_color"))
     created_at = now_iso()
     cur = db.execute(
-        "INSERT INTO comments (pin_id, author_name, body, created_at, status) VALUES (?, ?, ?, ?, 'visible')",
-        (pin_id, author_name, body, created_at),
+        "INSERT INTO comments (pin_id, author_name, author_color, body, created_at, status)"
+        " VALUES (?, ?, ?, ?, ?, 'visible')",
+        (pin_id, author_name, author_color, body, created_at),
     )
     db.commit()
 
@@ -123,6 +137,7 @@ def post_comment():
                 "id": cur.lastrowid,
                 "pin_id": pin_id,
                 "author_name": author_name,
+                "author_color": author_color,
                 "body": body,
                 "created_at": created_at,
             }

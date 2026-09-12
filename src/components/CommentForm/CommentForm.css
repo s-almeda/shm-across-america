@@ -1,0 +1,58 @@
+/* The textarea and submit button are styled by the index card that hosts
+   this form; only the name/colour row belongs to the form itself. */
+
+.comment-form__identity {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.6rem;
+}
+
+.comment-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.comment-form__field--color {
+  flex: none;
+}
+
+.comment-form__label {
+  font-family: var(--font-hand);
+  font-size: 0.7rem;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+/* A plain square of colour that opens the OS picker when clicked. The
+   vendor pseudo-elements are the only way to strip the browser's own
+   inset padding and rounded chip. */
+.comment-form__swatch {
+  width: 1.55rem;
+  height: 1.55rem;
+  padding: 0;
+  border: 1px solid rgba(0, 0, 0, 0.55);
+  border-radius: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.comment-form__swatch::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.comment-form__swatch::-webkit-color-swatch {
+  border: none;
+}
+
+.comment-form__swatch::-moz-color-swatch {
+  border: none;
+}
+
+/* Bigger than the card's other fields -- the name is the bit they've just
+   chosen a colour for. The colour itself arrives inline as --card-input-ink. */
+.comment-form__name {
+  --card-input-size: var(--author-size);
+  font-weight: bold;
+}

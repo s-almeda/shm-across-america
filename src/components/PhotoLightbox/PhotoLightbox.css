@@ -9,12 +9,34 @@
   padding: 20px;
 }
 
+.photo-lightbox__figure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  margin: 0;
+  max-width: 100%;
+  min-height: 0;
+}
+
+/* Deliberately short of filling the screen, to leave the caption room. */
 .photo-lightbox__img {
-  max-width: min(90vw, 900px);
-  max-height: 85vh;
+  max-width: min(72vw, 680px);
+  max-height: 66vh;
   background: #fff;
   padding: 0.6rem;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+}
+
+/* Capped in ch, not vw: on a wide screen a full-width line of this size is
+   hard to track back to the start. */
+.photo-lightbox__caption {
+  max-width: min(52ch, 100%);
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: #fff;
+  text-align: center;
 }
 
 .photo-lightbox__close {

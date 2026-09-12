@@ -1,5 +1,6 @@
 import { CARD_SMALL, ICONS } from "../../map/config";
 import { TILT_RANGE, useHoverTilt } from "../../lib/useHoverTilt";
+import { stableJitter } from "../../lib/format";
 import "./PinStack.css";
 
 const PEEK_CLASS = { photo: "is-white", note: "is-green", comment: "is-yellow" };
@@ -14,7 +15,9 @@ function artOffset({ dx = 0, dy = 0, rot = 0 }) {
 /* Up to four slivers under the pin hint at what's posted there without
    opening anything: white = photo, green = shm's notes, yellow = comments.
    The count is written on the top sliver, as if on the note itself. */
-export default function PinStack({ icon, peeks = [], count = 0, focused, clickable }) {
+const PEEK_JITTER = 9; // degrees either side of the fan
+
+export default function PinStack({ icon, peeks = [], count = 0, seed = "", focused, clickable }) {
   const art = ICONS[icon];
   const tilt = useHoverTilt(TILT_RANGE.pin);
   const anchor = `${art.ax * 100}% ${art.ay * 100}%`;
@@ -39,9 +42,13 @@ export default function PinStack({ icon, peeks = [], count = 0, focused, clickab
             style={{
               width: kind === "photo" ? CARD_SMALL * 0.88 : CARD_SMALL,
               height: CARD_SMALL,
-              transform: `translate(-50%, -50%) translate(0, ${16 + i * 3}px) rotate(${
-                (i - (peeks.length - 1) / 2) * 7
-              }deg)`,
+              // A gentle fan keeps it reading as a stack; the jitter on top
+              // stops every pin looking like the same four slivers. Hashed
+              // from the pin, so the angles don't change on re-render.
+              transform: `translate(-50%, -50%) translate(0, ${16 + i * 3}px) rotate(${(
+                (i - (peeks.length - 1) / 2) * 4 +
+                stableJitter(`${seed}:${i}`, PEEK_JITTER)
+              ).toFixed(2)}deg)`,
             }}
           >
             {i === peeks.length - 1 && count > 0 && (

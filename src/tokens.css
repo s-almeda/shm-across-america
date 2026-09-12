@@ -18,26 +18,48 @@
   --route-red: #c2660f;
 
   --font-ui: "Pixelated MS Sans Serif", "MS Sans Serif", system-ui, sans-serif;
-  --font-hand: "Pangolin", "Comic Sans MS", cursive;
+  /* Handwriting, wherever paper is being written on. */
+  --font-hand: "Comic Relief", "Comic Sans MS", "Chalkboard SE", cursive;
+
+  /* A commenter's name, wherever it appears -- bigger than the rest of the
+     stamp so their colour is worth having. 0.875rem = 14px; whole pixel
+     sizes keep the bitmap font crisp. */
+  --author-size: 0.875rem;
 
   /* post grid -- every card is exactly --card-w x --card-h, which is what
      lets a multi-column grid work: equal rows can't leave dead space. */
-  --grid-cols: 3;
+  /* Two at most: it keeps the notes in the middle of the frame, clear of the
+     step arrows at the sides and of the car at the top left. */
+  --grid-cols: 2;
   --card-w: 205px;
   --card-h: 180px;
-  --photo-w: calc(var(--card-h) * 0.82); /* portrait polaroid, same height */
-  --grid-row-gap: 1.4rem;
-  --grid-col-gap: 1rem;
+  /* Polaroid: a square picture plus a caption of exactly this many lines.
+     Its width derives from these, so the picture stays square. */
+  --photo-pad: 0.35rem;
+  --photo-cap-lines: 3;
+  --photo-cap-size: 0.72rem;
+  --photo-cap-lh: 1.25;
+  --photo-cap-gap: 0.3rem;
+  /* Tight enough that the cards' rotated corners reach into each other: a
+     card tilted t degrees overhangs its box by w*sin(t) - h*(1-cos(t)),
+     about 9px here, so a gap under ~18px means neighbours touch. */
+  --grid-row-gap: 0.75rem;
+  --grid-col-gap: 0.6rem;
   --grid-pad-x: 3.25rem;
   --grid-pad-bottom: 3.5rem;
-  --grid-pad-top-extra: 3rem;
+  /* Clearance between the focused pin and the first row of notes. */
+  --grid-pad-top-extra: 2.1rem;
+
+  /* prev/next hand. point.png is 442x254, so this keeps its 1.74 ratio. */
+  --point-w: 52px;
+  --point-h: 30px;
 
   /* write-a-note sticker */
   --note-w: 190px;
   --note-h: 116px;
   --note-inset: 1.75rem;
-  --paw-w: 81px; /* writing_hand.png is 244x202 -- exactly 1/3 */
-  --paw-h: 67px;
+  --paw-w: 101px; /* writing_hand.png is 244x202 -- scaled up about 25% */
+  --paw-h: 84px;
 
   /*
    * Every shadow is <x> <drop> <blur> <ink>. --shadow-ink is the one knob
@@ -63,8 +85,10 @@
   /* Where a focused pin parks, and how far its art rises above that point.
      Both are set inline per pin by PinView, since they depend on its icon. */
   --anchor-x: 78px;
-  --anchor-y: 92px;
+  --anchor-y: 60px;
   --pin-reach: 16px;
+  --pin-reach-left: 22px;
+  --pin-center-y: 0px;
   --header-offset: 30px;
 }
 
@@ -76,26 +100,20 @@
  */
 
 /* Three 205px columns need ~750px of frame; below that, drop to two. */
-@media (max-width: 900px) {
-  :root {
-    --grid-cols: 2;
-  }
-}
-
 @media (max-width: 640px) {
   :root {
     /* Two columns at this width would be too narrow to read. */
     --grid-cols: 1;
-    --card-w: 205px;
-    --card-h: 180px;
-    --grid-row-gap: 1.6rem;
+    --grid-row-gap: 0.85rem;
     --grid-pad-x: 1.5rem;
     --grid-pad-bottom: 7.5rem;
     --grid-pad-top-extra: 2.4rem;
     --note-w: 150px;
     --note-h: 94px;
     --note-inset: 0.9rem;
-    --paw-w: 61px; /* 1/4 of 244x202 */
-    --paw-h: 51px;
+    --paw-w: 76px; /* scaled up about 25% */
+    --paw-h: 64px;
+    --point-w: 40px;
+    --point-h: 23px;
   }
 }

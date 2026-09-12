@@ -4,11 +4,11 @@ export async function fetchTrip() {
   return res.json();
 }
 
-export async function postComment({ pin_id, author_name, body }) {
+export async function postComment({ pin_id, author_name, author_color, body }) {
   const res = await fetch("/api/comments", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ pin_id, author_name, body }),
+    body: JSON.stringify({ pin_id, author_name, author_color, body }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));

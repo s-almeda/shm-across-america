@@ -88,15 +88,18 @@
   gap: 0.7rem;
 }
 
-/* Ruled lines rather than boxes, to match the card. */
-.index-card-modal__body input,
+/* Ruled lines rather than boxes, to match the card. Colour inputs opt out --
+   they're swatches, and width:100% would stretch them into bars. */
+.index-card-modal__body input:not([type="color"]),
 .index-card-modal__body textarea {
   appearance: none;
   -webkit-appearance: none;
   width: 100%;
   font-family: var(--font-hand);
-  font-size: 0.95rem;
-  color: rgba(0, 0, 0, 0.85);
+  /* Overridable per field by setting the custom property on the input --
+     a variable, so a form inside the card doesn't have to out-specify this. */
+  font-size: var(--card-input-size, 0.95rem);
+  color: var(--card-input-ink, rgba(0, 0, 0, 0.85));
   background: transparent;
   border: none;
   border-bottom: 1px solid rgba(0, 0, 0, 0.4);

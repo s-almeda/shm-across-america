@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS comments (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     pin_id INTEGER NOT NULL REFERENCES pins(id),
     author_name TEXT NOT NULL,
+    author_color TEXT,
     body TEXT NOT NULL,
     created_at TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'visible'
@@ -83,6 +84,7 @@ def init_db(app):
         db = get_db()
         db.executescript(SCHEMA)
         _add_column(db, "photos", "caption", "TEXT")
+        _add_column(db, "comments", "author_color", "TEXT")
         db.execute(
             "INSERT OR IGNORE INTO settings (key, value) VALUES ('comments_enabled', 'true')"
         )

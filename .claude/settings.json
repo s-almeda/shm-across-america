@@ -7,7 +7,10 @@
       "Bash(node browsercheck.js)",
       "Read(//tmp/**)",
       "Read(//private/tmp/**)",
-      "Bash(node --check static/map.js)"
+      "Bash(node --check static/map.js)",
+      "Bash(npm run *)",
+      "Bash(npx vite *)",
+      "Bash(./venv/bin/python -)"
     ]
   }
 }

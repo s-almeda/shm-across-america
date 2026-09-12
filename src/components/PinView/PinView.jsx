@@ -12,6 +12,10 @@ export default function PinView({
   onWriteNote,
   onOpenPhoto,
   onFlag,
+  onPrev,
+  onNext,
+  hasPrev,
+  hasNext,
 }) {
   /* The map is frozen underneath, so the header pin can be placed once at
      the anchor -- where the camera parked the real pin -- and stay aligned
@@ -23,6 +27,8 @@ export default function PinView({
     "--anchor-x": `${spot.x}px`,
     "--anchor-y": `${spot.y}px`,
     "--pin-reach": `${spot.up}px`,
+    "--pin-reach-left": `${spot.left}px`,
+    "--pin-center-y": `${spot.centerY}px`,
     "--header-offset": `${headerOffsetX(icon)}px`,
   };
 
@@ -41,12 +47,35 @@ export default function PinView({
         <div className="pin-view__dates">{fmtDateRange(items, pin.created_at)}</div>
       </div>
 
+      <button
+        type="button"
+        className="pin-view__step is-prev"
+        onClick={onPrev}
+        disabled={!hasPrev}
+        title="previous stop"
+        aria-label="previous stop"
+      >
+        <img className="pin-view__point" src="/assets/point.png" alt="" />
+      </button>
+
       <PostGrid
         items={items}
         flipKey={pin.id}
+        anchor={spot}
         onOpenPhoto={onOpenPhoto}
         onFlag={onFlag}
       />
+
+      <button
+        type="button"
+        className="pin-view__step is-next"
+        onClick={onNext}
+        disabled={!hasNext}
+        title="next stop"
+        aria-label="next stop"
+      >
+        <img className="pin-view__point" src="/assets/point.png" alt="" />
+      </button>
     </div>
   );
 }
