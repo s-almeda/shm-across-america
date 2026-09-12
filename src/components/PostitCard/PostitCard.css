@@ -26,10 +26,12 @@
   line-height: 1.25;
   color: var(--ink-stamp-green);
   margin-bottom: 0.45rem;
+  padding-right: 30px;
 }
 
 .postit-card.is-comment .postit-card__stamp {
   color: var(--ink-stamp-yellow);
+
 }
 
 /* Inherits the stamp colour unless the commenter picked one. */
