@@ -29,8 +29,9 @@
 
   /* post grid -- every card is exactly --card-w x --card-h, which is what
      lets a multi-column grid work: equal rows can't leave dead space. */
-  /* Two at most: it keeps the notes in the middle of the frame, clear of the
-     step arrows at the sides and of the car at the top left. */
+  /* Column count is the one token with three settings -- see the two media
+     blocks at the bottom. Two is the middle case: it keeps the notes clear of
+     the step arrows at the sides and of the car at the top left. */
   --grid-cols: 2;
   --card-w: 205px;
   --card-h: 180px;
@@ -94,10 +95,24 @@
 }
 
 /*
- * One breakpoint, 640px. Media queries can't read a custom property, so that
- * number is repeated literally here and in each component's media block.
- * Shared responsive sizes change here, not in components.
+ * Two breakpoints: 640px down to one column, 1000px up to three. Media
+ * queries can't read a custom property, so those numbers are repeated
+ * literally here and in each component's media block. Shared responsive sizes
+ * change here, not in components.
  */
+
+/*
+ * The frame itself stops growing at 1000px wide, so this is as much room as
+ * the grid will ever get. Three cards plus their gaps come to about 634px,
+ * centred -- which still leaves roughly 80px clear of the step arrows on each
+ * side. Raising --card-w or --grid-cols eats into that margin first.
+ */
+@media (min-width: 1000px) {
+  :root {
+    --grid-cols: 3;
+  }
+}
+
 @media (max-width: 640px) {
   :root {
     /* Two columns at this width would be too narrow to read. */

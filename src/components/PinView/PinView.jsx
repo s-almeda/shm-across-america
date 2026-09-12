@@ -53,7 +53,9 @@ export default function PinView({
       {arrived && (
         <div className="pin-view__header" key={pin.id}>
           <div className="pin-view__place">{pin.label || "Somewhere out there"}</div>
-          <div className="pin-view__dates">{meta}</div>
+          {/* Omitted entirely rather than left empty, so the chip closes up
+              around the place name instead of keeping a blank line. */}
+          {meta && <div className="pin-view__dates">{meta}</div>}
         </div>
       )}
 

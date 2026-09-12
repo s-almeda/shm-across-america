@@ -10,7 +10,7 @@
    rises ~74px above its point and would otherwise sit under this. */
 .pin-view__back {
   position: absolute;
-  top: calc(var(--anchor-y) - var(--pin-reach) - 2.6rem);
+  top: calc(var(--anchor-y) - var(--pin-reach) - 3rem);
   left: calc(var(--anchor-x) - var(--pin-reach-left));
   z-index: 3;
   font-family: var(--font-ui);

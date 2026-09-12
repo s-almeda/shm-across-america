@@ -233,10 +233,9 @@ export default function App() {
                   tooltip={
                     <PinTooltip
                       place={stop.name}
-                      meta={
-                        stop.note ||
-                        (count ? `${count} idea${count === 1 ? "" : "s"}` : "planned stop")
-                      }
+                      // No filler subtitle: the orange pin already says it's
+                      // a planned stop.
+                      meta={stop.note || (count ? `${count} idea${count === 1 ? "" : "s"}` : null)}
                     />
                   }
                 >
@@ -265,7 +264,7 @@ export default function App() {
             icon={icon}
             stickerArt={stickerArt}
             items={items}
-            meta={onStop ? "planned stop" : fmtDateRange(items, target.created_at)}
+            meta={onStop ? null : fmtDateRange(items, target.created_at)}
             commentsEnabled={trip.comments_enabled}
             onBack={() => setOpen(null)}
             onWriteNote={() => setModal(trip.comments_enabled ? "comment" : "comments-off")}
