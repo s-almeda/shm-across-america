@@ -3,7 +3,7 @@ import L from "leaflet";
 import { ZOOM_DETAIL, ZOOM_MIN, ZOOM_OVERVIEW } from "./config";
 import "./MapCanvas.css";
 
-export default function MapCanvas({ onReady, pinOpen, children }) {
+export default function MapCanvas({ onReady, pinOpen, reading, children }) {
   const hostRef = useRef(null);
 
   useEffect(() => {
@@ -69,7 +69,9 @@ export default function MapCanvas({ onReady, pinOpen, children }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const cls = ["map-canvas", pinOpen && "is-pin-open"].filter(Boolean).join(" ");
+  const cls = ["map-canvas", pinOpen && "is-pin-open", reading && "is-reading"]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <div className={cls} ref={hostRef}>

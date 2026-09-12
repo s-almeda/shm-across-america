@@ -3,9 +3,24 @@
   height: 100%;
 }
 
-/* Other pins recede while one is open. */
+/*
+ * Only the tile pane is dimmed. Markers (pane z-index 600), the route line
+ * (400) and the post cards (800) are separate layers, so a filter here can't
+ * reach them. Held back until the camera has landed -- filtering mid-flight
+ * would blur the motion.
+ */
+.map-canvas .leaflet-tile-pane {
+  transition: filter 0.3s ease-out;
+}
+
+.map-canvas.is-reading .leaflet-tile-pane {
+  filter: blur(var(--map-dim-blur)) brightness(var(--map-dim-brightness));
+}
+
+/* Other pins recede while one is open -- but not so far that they disappear
+   against the dimmed map. */
 .map-canvas.is-pin-open .leaflet-marker-icon:not(.is-focused) {
-  opacity: 0.35;
+  opacity: 0.55;
 }
 
 /* The map is frozen while a pin is open, so zoom would be a dead control. */

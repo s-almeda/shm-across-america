@@ -86,7 +86,9 @@ export default function App() {
       <SiteHeader onAbout={() => setModal("about")} />
 
       <MapFrame pinOpen={pinOpen}>
-        <MapCanvas onReady={setMap} pinOpen={pinOpen} />
+        {/* `reading` waits for the fly-in to land; dimming mid-flight would
+            blur the motion. */}
+        <MapCanvas onReady={setMap} pinOpen={pinOpen} reading={pinOpen && !flying} />
 
         {map && trip && (
           <>

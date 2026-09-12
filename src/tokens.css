@@ -44,16 +44,21 @@
    * for "darker"; the blur value is the knob for "sharper" -- lower is
    * sharper, 0 is a hard offset shadow.
    */
-  --shadow-ink: rgba(0, 0, 0, 0.72);
+  --shadow-ink: rgba(0, 0, 0, 0.75);
   --shadow-ink-lift: rgba(0, 0, 0, 0.45);
   --lift-y: -3px;
-  --shadow-rest: 0 2px 3px var(--shadow-ink);
-  --shadow-lift: 0 5px 6px var(--shadow-ink-lift);
-  --shadow-map: 0 2px 2px var(--shadow-ink);
+  --shadow-rest: 0 3px 1px var(--shadow-ink);
+  --shadow-lift: 0 6px 3px var(--shadow-ink-lift);
+  --shadow-map: 0 3px 1px var(--shadow-ink);
   --shadow-art: 0 2px 2px var(--shadow-ink);
   --shadow-hard: 2px 2px 0 var(--shadow-ink);
   --shadow-peek: 0 1px 2px var(--shadow-ink);
   --lift-ease: transform 0.16s ease-out, box-shadow 0.16s ease-out;
+
+  /* The map recedes while you're reading a pin's notes. Applied to Leaflet's
+     tile pane only, so pins, cards and the route line stay crisp. */
+  --map-dim-blur: 2.5px;
+  --map-dim-brightness: 0.78;
 
   /* Where a focused pin parks, and how far its art rises above that point.
      Both are set inline per pin by PinView, since they depend on its icon. */
