@@ -26,15 +26,6 @@ export default function CommentForm({ onSubmit }) {
     <form className="comment-form" onSubmit={submit}>
       <div className="comment-form__identity">
         <label className="comment-form__field comment-form__field--color">
-          <span className="comment-form__label">pick your color</span>
-          <input
-            type="color"
-            className="comment-form__swatch"
-            value={color}
-            onChange={(e) => setColor(e.target.value)}
-            title="color"
-          />
-
                     <span className="comment-form__label">pick color</span>
           <input
             type="color"
