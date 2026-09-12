@@ -44,9 +44,23 @@
   box-sizing: border-box;
 }
 
+/*
+ * The whole page is one fixed screen -- everything is meant to be in view at
+ * once, and any page-level scroll is a zoom gesture that missed the map.
+ * Scrolling happens only inside the post grid. dvh so mobile browser chrome
+ * appearing doesn't leave a gap.
+ */
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+  /* No rubber-banding past the edges, and no scroll chaining out of the grid. */
+  overscroll-behavior: none;
+}
+
 body {
   margin: 0;
-  min-height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   color: var(--ink);

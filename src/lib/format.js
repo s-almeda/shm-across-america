@@ -65,23 +65,63 @@ export function stableJitter(key, range) {
   return ((h >>> 0) / 4294967296) * 2 * range - range;
 }
 
-export function stableRotation(key, range = 2.5) {
-  return `${stableJitter(key, range).toFixed(2)}deg`;
+/*
+ * Tilts for a whole grid at once, because the rule is about neighbours.
+ *
+ * A per-card hash is a fair coin, and fair coins clump -- five cards leaning
+ * the same way reads as a mistake rather than as randomness. Strictly
+ * alternating fixes that but is worse: with an even number of columns, every
+ * card in a column gets the same parity and each column ends up uniform.
+ *
+ * So the direction stays hashed, and is only overridden once it has run the
+ * same way three times. Still stable per item, since the flips depend on the
+ * hashes rather than on anything random.
+ */
+const MAX_RUN = 3;
+
+export function rotationsFor(keys, range = 2.5) {
+  let last = 0;
+  let run = 0;
+  return keys.map((key) => {
+    const jitter = stableJitter(key, range);
+    let sign = jitter < 0 ? -1 : 1;
+    if (sign === last && run >= MAX_RUN) sign = -sign;
+    run = sign === last ? run + 1 : 1;
+    last = sign;
+    // A dead-flat card among tilted ones looks like a bug, so keep a floor.
+    return `${(sign * (0.55 + Math.abs(jitter) * 0.85)).toFixed(2)}deg`;
+  });
 }
 
-/* Owner posts first (oldest to newest), then comments. */
+/*
+ * A commenter's chosen colour is picked for their name, at full strength on
+ * white. The same colour behind a whole postit would be unreadable, so the
+ * paper is that hue mixed most of the way to white -- their colour, but as
+ * pastel stationery.
+ */
+export function pastel(hex, mix = 0.78) {
+  if (!/^#[0-9a-fA-F]{6}$/.test(hex || "")) return null;
+  const channel = (i) => {
+    const v = parseInt(hex.slice(1 + i * 2, 3 + i * 2), 16);
+    return Math.round(v + (255 - v) * mix);
+  };
+  return `rgb(${channel(0)}, ${channel(1)}, ${channel(2)})`;
+}
+
+/* Owner posts first (oldest to newest), then comments. A planned stop has
+   neither photos nor notes -- only what visitors have left on it. */
 export function buildItems(pin) {
   const owner = [
-    ...pin.photos.map((p) => ({
+    ...(pin.photos ?? []).map((p) => ({
       kind: "photo",
       url: p.url,
       caption: p.caption,
       created_at: p.created_at,
     })),
-    ...pin.messages.map((m) => ({ kind: "note", text: m.text, created_at: m.created_at })),
+    ...(pin.messages ?? []).map((m) => ({ kind: "note", text: m.text, created_at: m.created_at })),
   ].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 
-  const comments = pin.comments
+  const comments = (pin.comments ?? [])
     .slice()
     .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
     .map((c) => ({

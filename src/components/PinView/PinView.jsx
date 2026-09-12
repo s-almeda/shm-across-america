@@ -1,12 +1,14 @@
 import PostGrid from "../PostGrid/PostGrid";
 import PinSticker from "../PinSticker/PinSticker";
 import WriteNoteSticker from "../WriteNoteSticker/WriteNoteSticker";
-import { fmtDateRange } from "../../lib/format";
-import { focusAnchor, headerOffsetX, pinIconFor } from "../../map/config";
+import { focusAnchor, headerOffsetX } from "../../map/config";
 import "./PinView.css";
 
 export default function PinView({
   pin,
+  icon,
+  stickerArt,
+  meta,
   items,
   commentsEnabled,
   onBack,
@@ -23,7 +25,6 @@ export default function PinView({
      the anchor -- where the camera parked the real pin -- and stay aligned
      with no sync loop. --pin-reach is how far this pin's art rises above the
      anchor, so the back button can clear the art rather than the point. */
-  const icon = pinIconFor(pin);
   const spot = focusAnchor(icon);
   const anchor = {
     "--anchor-x": `${spot.x}px`,
@@ -44,7 +45,7 @@ export default function PinView({
 
       {/* The sticker copy is the arrival, so it isn't drawn mid-flight -- the
           only pin on screen while moving is the real one down on the map. */}
-      {arrived && <PinSticker icon={icon} />}
+      {arrived && <PinSticker icon={icon} art={stickerArt} />}
 
       {/* Gone while the camera is moving -- it names the place we're headed
           for, so it shouldn't be readable until we're there. Keyed so the
@@ -52,7 +53,7 @@ export default function PinView({
       {arrived && (
         <div className="pin-view__header" key={pin.id}>
           <div className="pin-view__place">{pin.label || "Somewhere out there"}</div>
-          <div className="pin-view__dates">{fmtDateRange(items, pin.created_at)}</div>
+          <div className="pin-view__dates">{meta}</div>
         </div>
       )}
 

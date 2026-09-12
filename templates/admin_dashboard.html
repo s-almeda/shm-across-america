@@ -8,6 +8,10 @@
   <style>
     * { box-sizing: border-box; }
     .hidden { display: none !important; }
+    /* An edited-but-unsaved item is marked, so a pending change is visible
+       rather than silently sitting in the field. */
+    .item.dirty { border-left: 3px solid #c08a2e; padding-left: 0.6rem; }
+    .item.dirty textarea, .item.dirty input { border-color: #c08a2e; }
     /* A hidden stop still needs to be findable, so it fades rather than goes. */
     .stop-off { opacity: 0.55; }
     .stop-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
@@ -94,6 +98,23 @@
       <div class="row">
         <form method="post" action="{{ url_for('admin.restore_comment', comment_id=c.id) }}"><button>Restore</button></form>
         <form method="post" action="{{ url_for('admin.delete_comment', comment_id=c.id) }}"
+              onsubmit="return confirm('Delete this comment for good?');">
+          <button class="danger">Delete</button>
+        </form>
+      </div>
+    </div>
+  {% endfor %}
+  {% endif %}
+
+  {% if flagged_stops %}
+  <h2>Flagged comments on planned stops ({{ flagged_stops|length }})</h2>
+  {% for c in flagged_stops %}
+    <div class="card">
+      <strong>{{ c.author_name }}</strong> · on {{ c.stop_name }} · {{ c.created_at }}
+      <p>{{ c.body }}</p>
+      <div class="row">
+        <form method="post" action="{{ url_for('admin.restore_stop_comment', comment_id=c.id) }}"><button>Restore</button></form>
+        <form method="post" action="{{ url_for('admin.delete_stop_comment', comment_id=c.id) }}"
               onsubmit="return confirm('Delete this comment for good?');">
           <button class="danger">Delete</button>
         </form>
@@ -346,23 +367,35 @@
       return data;
     }
 
-    /* On failure the fields are left exactly as typed -- nothing is cleared
-       and the page never reloads, so a long note can't be lost. */
+    /*
+     * On failure the fields are left exactly as typed -- nothing is cleared
+     * and the page never reloads, so a long note can't be lost.
+     *
+     * Edits save on blur as well as on the button. Typing in a field and
+     * navigating away without noticing the Save button is the obvious way to
+     * lose an edit, so a dirty field says so and saves itself when you leave
+     * it.
+     */
     function wireSave(item) {
       const btn = item.querySelector(".save-btn");
       const status = item.querySelector(".save-status");
       const text = item.querySelector(".f-text");
       const caption = item.querySelector(".f-caption");
       const when = item.querySelector(".f-when");
+      const fields = [text, caption, when].filter(Boolean);
+      let dirty = false;
 
       async function save() {
-        const payload = { created_at: localInputToIso(when.value) };
+        const payload = {};
+        if (when) payload.created_at = localInputToIso(when.value);
         if (text) payload.text = text.value;
         if (caption) payload.caption = caption.value;
         btn.disabled = true;
         setStatus(status, "Saving…");
         try {
           await postJson(item.dataset.saveUrl, payload);
+          dirty = false;
+          item.classList.remove("dirty");
           setStatus(status, "Saved ✓", "ok");
         } catch (err) {
           setStatus(status, err.message, "error");
@@ -370,6 +403,17 @@
           btn.disabled = false;
         }
       }
+
+      fields.forEach((f) => {
+        f.addEventListener("input", () => {
+          dirty = true;
+          item.classList.add("dirty");
+          setStatus(status, "Unsaved changes");
+        });
+        // Saving on the way out is what makes the edit stick whether or not
+        // the button gets clicked.
+        f.addEventListener("blur", () => { if (dirty) save(); });
+      });
 
       btn.addEventListener("click", save);
       if (text) {

@@ -58,6 +58,18 @@ export default function MapCanvas({ onReady, pinOpen, reading, traveling, childr
     };
     host.addEventListener("wheel", onPinch, { passive: false, capture: true });
 
+    /*
+     * Safari alone reports a trackpad/touch pinch as its own gesture events
+     * rather than a ctrl-wheel, and its default is to zoom the whole page.
+     * Swallowing them leaves the gesture to Leaflet (and to the wheel handler
+     * above on the browsers that do send wheel).
+     */
+    const swallow = (e) => e.preventDefault();
+    const GESTURE_EVENTS = ["gesturestart", "gesturechange", "gestureend"];
+    GESTURE_EVENTS.forEach((name) =>
+      host.addEventListener(name, swallow, { passive: false }),
+    );
+
     // The frame is sized by aspect-ratio, which can still be settling when
     // Leaflet first measures its container.
     const raf = requestAnimationFrame(() => map.invalidateSize());
@@ -69,6 +81,7 @@ export default function MapCanvas({ onReady, pinOpen, reading, traveling, childr
     return () => {
       cancelAnimationFrame(raf);
       host.removeEventListener("wheel", onPinch, { capture: true });
+      GESTURE_EVENTS.forEach((name) => host.removeEventListener(name, swallow));
       window.removeEventListener("resize", onResize);
       map.remove();
       onReady(null);

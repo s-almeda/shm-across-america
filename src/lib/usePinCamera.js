@@ -37,7 +37,7 @@ function anchoredCenter(map, latlng, zoom, anchor) {
  * `onApproach` fires shortly before touchdown, so the ground can fade back in
  * and already be there when the notes arrive.
  */
-export function usePinCamera(map, openPin, onArrive, { onApproach } = {}) {
+export function usePinCamera(map, openPin, onArrive, { onApproach, icon } = {}) {
   const arrive = useRef(onArrive);
   arrive.current = onArrive;
 
@@ -61,7 +61,11 @@ export function usePinCamera(map, openPin, onArrive, { onApproach } = {}) {
     const seconds = flightSeconds(map, to);
     const landed = () => arrive.current?.();
 
-    map.flyTo(anchoredCenter(map, to, ZOOM_DETAIL, focusAnchor(pinIconFor(openPin))), ZOOM_DETAIL, {
+    // A planned stop's art isn't the one pinIconFor would guess, so the
+    // caller can name the icon whose reach sets the camera.
+    const anchor = focusAnchor(icon ?? pinIconFor(openPin));
+
+    map.flyTo(anchoredCenter(map, to, ZOOM_DETAIL, anchor), ZOOM_DETAIL, {
       duration: seconds,
     });
     map.once("moveend", landed);

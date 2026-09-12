@@ -12,12 +12,16 @@
   will-change: transform, opacity;
 }
 
+/* shm's own posts read as the polished ones -- squared-off paper is for the
+   visitors' postits. */
 .postit-card.is-note {
   background: var(--postit-green);
+  border-radius: 10px;
 }
 
+/* Tinted to the commenter's own colour when they picked one. */
 .postit-card.is-comment {
-  background: var(--postit-yellow);
+  background: var(--postit-paper, var(--postit-yellow));
 }
 
 .postit-card__stamp {

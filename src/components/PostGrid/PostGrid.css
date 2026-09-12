@@ -11,6 +11,11 @@
   inset: 0;
   z-index: 2;
   overflow-y: auto;
+  /* The only scroller on the page. `contain` stops a flick that reaches the
+     end from turning into a page scroll or a browser back-swipe; pan-y keeps
+     a two-finger pinch out of here so it reaches the map instead. */
+  overscroll-behavior: contain;
+  touch-action: pan-y;
   display: grid;
   grid-template-columns: repeat(var(--grid-cols), minmax(0, var(--card-w)));
   justify-content: center;

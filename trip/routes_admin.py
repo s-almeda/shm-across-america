@@ -109,6 +109,14 @@ def register_admin_routes(app):
             ORDER BY comments.created_at DESC
             """
         ).fetchall()
+        flagged_stops = db.execute(
+            """
+            SELECT stop_comments.*, planned_stops.name AS stop_name
+            FROM stop_comments JOIN planned_stops ON planned_stops.id = stop_comments.stop_id
+            WHERE stop_comments.status = 'flagged'
+            ORDER BY stop_comments.created_at DESC
+            """
+        ).fetchall()
         comments_enabled = (
             db.execute("SELECT value FROM settings WHERE key = 'comments_enabled'").fetchone()["value"]
             == "true"
@@ -119,6 +127,7 @@ def register_admin_routes(app):
             pins=pins,
             stops=stops,
             flagged=flagged,
+            flagged_stops=flagged_stops,
             comments_enabled=comments_enabled,
         )
 
@@ -370,6 +379,25 @@ def register_admin_routes(app):
     def delete_comment(comment_id):
         db = get_db()
         db.execute("UPDATE comments SET status = 'deleted' WHERE id = ?", (comment_id,))
+        db.commit()
+        flash("Comment deleted.", "ok")
+        return redirect(url_for("admin.dashboard"))
+
+    # Comments left on a planned stop live in their own table, so moderating
+    # them needs its own pair of routes.
+
+    @bp.route(f"/{path}/stop-comments/<int:comment_id>/restore", methods=["POST"])
+    def restore_stop_comment(comment_id):
+        db = get_db()
+        db.execute("UPDATE stop_comments SET status = 'visible' WHERE id = ?", (comment_id,))
+        db.commit()
+        flash("Comment is visible again.", "ok")
+        return redirect(url_for("admin.dashboard"))
+
+    @bp.route(f"/{path}/stop-comments/<int:comment_id>/delete", methods=["POST"])
+    def delete_stop_comment(comment_id):
+        db = get_db()
+        db.execute("UPDATE stop_comments SET status = 'deleted' WHERE id = ?", (comment_id,))
         db.commit()
         flash("Comment deleted.", "ok")
         return redirect(url_for("admin.dashboard"))

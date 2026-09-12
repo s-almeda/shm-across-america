@@ -87,7 +87,10 @@ export function focusAnchor(iconKey) {
 }
 
 export const ICONS = {
-  car: { src: "/assets/car.png", w: 160, h: 98, blend: false, ax: 0.7, ay: 0.2, dx: 38, dy: -54, rot: 0.85, focusScale: 1.2 },
+  /* focusDy lifts only the sticker copy in detail view, so the car overlaps
+     the back-to-map button on purpose. The map pin and all the geometry
+     derived from it stay where they are. */
+  car: { src: "/assets/car.png", w: 160, h: 98, blend: false, ax: 0.7, ay: 0.2, dx: 38, dy: -15, rot: 0.85, focusScale: 1.2, focusDy: -14 },
   tack: { src: "/assets/tacks/tack_1.png", w: 26, h: 31, blend: false, ax: 0.5, ay: 0.5, focusScale: 1.7 },
   pin: { src: "/assets/pins/pin_1.png", w: 22, h: 24, blend: false, ax: 0.5, ay: 0.5, focusScale: 1.7 },
 };

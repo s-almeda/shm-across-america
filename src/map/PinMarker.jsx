@@ -10,7 +10,7 @@ import "./PinMarker.css";
  * empty mount div and React portals the pin's contents into that. Two owners,
  * two elements, no conflict.
  */
-export default function PinMarker({ map, lat, lng, icon, focused, onClick, tooltip, tooltipOffset, children }) {
+export default function PinMarker({ map, lat, lng, icon, focused, onClick, tooltip, tooltipOffset, zOffset = 0, children }) {
   // Derived from the art's height and lift unless a caller overrides it.
   const offsetY = tooltipOffset ?? tooltipOffsetY(icon);
   const [mount, setMount] = useState(null);
@@ -22,6 +22,10 @@ export default function PinMarker({ map, lat, lng, icon, focused, onClick, toolt
   useEffect(() => {
     const art = ICONS[icon];
     const marker = L.marker([lat, lng], {
+      /* Leaflet stacks markers by latitude by default, which is meaningless
+         here -- zoomed out, the paper stacks overlap and the newest stop
+         should be the one on top. */
+      zIndexOffset: zOffset,
       icon: L.divIcon({
         html: '<div class="pin-marker__mount"></div>',
         className: "pin-marker",
@@ -43,7 +47,7 @@ export default function PinMarker({ map, lat, lng, icon, focused, onClick, toolt
       markerRef.current = null;
       setMount(null);
     };
-  }, [map, icon, lat, lng]);
+  }, [map, icon, lat, lng, zOffset]);
 
   /* Leaflet takes a DOM node as tooltip content and re-appends it on every
      open, so one stable node is all React needs to portal into. */

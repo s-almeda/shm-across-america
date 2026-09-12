@@ -1,17 +1,30 @@
+/*
+ * Stuck to the top right of the header paper, tilted clockwise and dropped
+ * far enough to hang just off its bottom edge -- a sticker pressed onto the
+ * corner of the sheet rather than part of the heading.
+ */
 .about-sticker {
-  --rot: -3deg;
+  --rot: 4deg;
   --sticker-shadow: var(--shadow-rest);
+  position: absolute;
+  right: 1.5rem;
+  top: 0.9rem;
+  z-index: 3;
   display: block;
-  z-index: 2;
   width: fit-content;
   background: var(--paper-note);
   font-size: 0.85rem;
   padding: 0.5rem 0.9rem;
+  /* Pushes it past the header's bottom edge; raise to let it hang further. */
+  translate: 0 0.85rem;
 }
 
 @media (max-width: 640px) {
   .about-sticker {
+    right: 0.9rem;
+    top: 0.7rem;
     font-size: 0.75rem;
     padding: 0.4rem 0.7rem;
+    translate: 0 0.6rem;
   }
 }

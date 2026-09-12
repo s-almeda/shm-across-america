@@ -1,14 +1,21 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { loadIdentity, randomInk, saveIdentity } from "../../lib/identity";
 import "./CommentForm.css";
 
-export default function CommentForm({ onSubmit }) {
+export default function CommentForm({ onSubmit, onColor }) {
   // Read once on mount: whatever they used last time, else a random ink.
   const [saved] = useState(loadIdentity);
   const [name, setName] = useState(saved?.name ?? "");
   const [color, setColor] = useState(saved?.color ?? randomInk);
   const [body, setBody] = useState("");
   const [busy, setBusy] = useState(false);
+
+  /* Reported upwards so the card around this form can tint itself to the
+     pastel the postit will be -- including the random colour on first open,
+     which the form picks before anyone touches the swatch. */
+  useEffect(() => {
+    onColor?.(color);
+  }, [color, onColor]);
 
   async function submit(e) {
     e.preventDefault();

@@ -21,8 +21,16 @@
   max-height: 85vh;
   overflow-y: auto;
   color: #1a1a1a;
-  background-color: var(--paper-header);
+  /*
+   * --card-paper lets the comment form tint the card to the pastel the
+   * commenter's postit will actually be, as a live preview. The texture is an
+   * opaque jpeg, so it has to multiply against the colour -- a plain
+   * background-color would be hidden underneath it entirely. White is the
+   * no-op default, since multiplying by white changes nothing.
+   */
+  background-color: var(--card-paper, #fff);
   background-image: url("/assets/textures/lined_paper.jpeg");
+  background-blend-mode: multiply;
   background-size: cover;
   background-position: center;
   border: 1px solid rgba(0, 0, 0, 0.55);
