@@ -10,10 +10,37 @@
  * would blur the motion.
  */
 .map-canvas .leaflet-tile-pane {
-  transition: filter 0.3s ease-out;
+  transition: filter 0.3s ease-out, opacity 0.25s ease-out;
 }
 
-.map-canvas.is-reading .leaflet-tile-pane {
+/*
+ * Travelling between stops. The ground drops away to bare paper and the drawn
+ * route becomes the thing you follow to the next pin.
+ *
+ * This is also what makes the flight bearable: the arc itself is unchanged,
+ * but almost all of the motion sickness came from map texture rushing out and
+ * back in. With no detail on screen, the same camera move reads as a glide
+ * over a paper map. Two stops are ~160,000px apart at street zoom, so there
+ * is no version of this that pans the whole way at a constant zoom.
+ */
+.map-canvas.is-traveling .leaflet-tile-pane {
+  opacity: 0;
+}
+
+.map-canvas.is-traveling .leaflet-overlay-pane path {
+  stroke-width: 4;
+  stroke-opacity: 1;
+}
+
+.map-canvas .leaflet-overlay-pane path {
+  transition: stroke-width 0.25s ease-out, stroke-opacity 0.25s ease-out;
+}
+
+/* The pins recede with the map they're pinned to -- that's what tells you
+   they belong to the map, while the sticker copy in the pin view belongs to
+   the collage on top of it. */
+.map-canvas.is-reading .leaflet-tile-pane,
+.map-canvas.is-reading .leaflet-marker-pane {
   filter: blur(var(--map-dim-blur)) brightness(var(--map-dim-brightness));
 }
 

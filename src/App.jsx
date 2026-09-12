@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import MapCanvas from "./map/MapCanvas";
 import PinMarker from "./map/PinMarker";
 import RouteLine from "./map/RouteLine";
-import { ZOOM_OVERVIEW } from "./map/config";
+import { pinVariantFor, ZOOM_OVERVIEW } from "./map/config";
 import SiteHeader from "./components/SiteHeader/SiteHeader";
 import MapFrame from "./components/MapFrame/MapFrame";
 import PinStack from "./components/PinStack/PinStack";
@@ -33,10 +33,21 @@ export default function App() {
   const openPin = trip?.pins.find((p) => p.id === openPinId) ?? null;
   const items = useMemo(() => (openPin ? buildItems(openPin) : []), [openPin]);
 
-  // Set before the pin changes, so the camera knows whether this move is a
-  // fly-in from the map or a cut between stops.
-  const cutToPin = useRef(false);
-  usePinCamera(map, openPin, () => setFlying(false), cutToPin);
+  /* `traveling` only covers stop-to-stop hops. Clicking a pin from the map is
+     a zoom-in with no arc to speak of, so the ground stays put for that. */
+  const [traveling, setTraveling] = useState(false);
+
+  usePinCamera(
+    map,
+    openPin,
+    () => {
+      setFlying(false);
+      setTraveling(false);
+    },
+    // The ground fades back in before touchdown, so it's already there when
+    // the notes fan out rather than washing in afterwards.
+    { onApproach: () => setTraveling(false) },
+  );
 
   /* Park the camera on the current pin the first time data lands -- later
      reloads must not yank the view out from under whoever's browsing. */
@@ -57,7 +68,6 @@ export default function App() {
       setOpenPinId(null);
       return;
     }
-    cutToPin.current = false;
     setOpenPinId(pin.id);
     setFlying(true);
   }
@@ -72,9 +82,9 @@ export default function App() {
   function step(delta) {
     const next = pins[openIndex + delta];
     if (!next) return;
-    cutToPin.current = true;
     setOpenPinId(next.id);
     setFlying(true);
+    setTraveling(true);
   }
 
   useEffect(() => {
@@ -114,7 +124,12 @@ export default function App() {
       <MapFrame pinOpen={pinOpen}>
         {/* `reading` waits for the fly-in to land; dimming mid-flight would
             blur the motion. */}
-        <MapCanvas onReady={setMap} pinOpen={pinOpen} reading={pinOpen && !flying} />
+        <MapCanvas
+          onReady={setMap}
+          pinOpen={pinOpen}
+          reading={pinOpen && !flying}
+          traveling={traveling}
+        />
 
         {map && trip && (
           <>
@@ -151,6 +166,8 @@ export default function App() {
               );
             })}
 
+            {/* Planned stops are markers only -- no route line runs through
+                them, because the trip line is where we've actually been. */}
             {trip.planned_stops.map((stop) => (
               <PinMarker
                 key={`stop-${stop.id ?? `${stop.lat},${stop.lng}`}`}
@@ -160,14 +177,17 @@ export default function App() {
                 icon="pin"
                 tooltip={<PinTooltip place={stop.name} meta={stop.note} />}
               >
-                <PinStack icon="pin" />
+                <PinStack icon="pin" art={pinVariantFor(`stop${stop.id}:${stop.name}`)} />
               </PinMarker>
             ))}
           </>
         )}
 
-        {openPin && !flying && (
+        {/* Stays mounted through a step: only the notes come and go, so the
+            arrows, back button and paw sticker don't blink out and back. */}
+        {openPin && (
           <PinView
+            showNotes={!flying}
             pin={openPin}
             items={items}
             commentsEnabled={trip.comments_enabled}
@@ -190,7 +210,7 @@ export default function App() {
       )}
 
       {modal === "comment" && (
-        <IndexCardModal title="Leave a note for shm!" onClose={() => setModal(null)}>
+        <IndexCardModal title="LEAVE A NOTE FOR SHM!" onClose={() => setModal(null)}>
           <CommentForm onSubmit={submitComment} />
         </IndexCardModal>
       )}

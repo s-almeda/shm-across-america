@@ -70,10 +70,13 @@ def trip():
             }
         )
 
+    # Hidden stops stay in the database -- they're just off the public map, so
+    # they can come back with one click once the road changes.
     planned_stops = [
         dict(row)
         for row in db.execute(
-            "SELECT id, name, lat, lng, note FROM planned_stops ORDER BY id ASC"
+            "SELECT id, name, lat, lng, note FROM planned_stops"
+            " WHERE hidden = 0 ORDER BY id ASC"
         ).fetchall()
     ]
 

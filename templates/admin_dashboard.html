@@ -3,10 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/png" href="/assets/favicon.png">
   <title>POST TO MAP!</title>
   <style>
     * { box-sizing: border-box; }
     .hidden { display: none !important; }
+    /* A hidden stop still needs to be findable, so it fades rather than goes. */
+    .stop-off { opacity: 0.55; }
+    .stop-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
     body { font-family: system-ui, sans-serif; background: #faf6ef; margin: 0; padding: 1rem; color: #222; }
     h1 { font-size: 1.3rem; }
     h2 { font-size: 1.05rem; margin-top: 2rem; border-bottom: 2px solid #2c5f2d; padding-bottom: 0.25rem; }
@@ -271,13 +275,21 @@
     </form>
   </div>
   {% for stop in stops %}
-    <div class="card">
+    <div class="card{% if stop.hidden %} stop-off{% endif %}">
       <strong>{{ stop.name }}</strong>
-      <div class="item-kind">{{ stop.lat }}, {{ stop.lng }}{% if stop.note %} · {{ stop.note }}{% endif %}</div>
-      <form method="post" action="{{ url_for('admin.delete_stop', stop_id=stop.id) }}"
-            onsubmit="return confirm('Delete this planned stop?');">
-        <button type="submit" class="danger">Delete</button>
-      </form>
+      <div class="item-kind">
+        {{ stop.lat }}, {{ stop.lng }}{% if stop.note %} · {{ stop.note }}{% endif %}
+        {% if stop.hidden %} · <em>hidden from the map</em>{% endif %}
+      </div>
+      <div class="stop-actions">
+        <form method="post" action="{{ url_for('admin.toggle_stop', stop_id=stop.id) }}">
+          <button type="submit">{% if stop.hidden %}Show on map{% else %}Hide from map{% endif %}</button>
+        </form>
+        <form method="post" action="{{ url_for('admin.delete_stop', stop_id=stop.id) }}"
+              onsubmit="return confirm('Delete this planned stop for good?');">
+          <button type="submit" class="danger">Delete</button>
+        </form>
+      </div>
     </div>
   {% endfor %}
 

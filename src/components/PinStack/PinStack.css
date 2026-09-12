@@ -16,11 +16,8 @@
   transform: rotate(var(--rot-hover, var(--rot, 0deg))) scale(1.09);
 }
 
-/* While its pin is open this marker *is* the heading's pin, so it grows to
-   read at that size. Per-icon, via --pin-focus-scale in config.js. */
-.pin-stack.is-focused {
-  transform: rotate(var(--rot, 0deg)) scale(var(--pin-focus-scale, 1));
-}
+/* Stays at map size while open: the bigger version is the sticker drawn over
+   the collage, and this one reads as the pin still lying on the map. */
 
 .pin-stack__layer {
   position: absolute;
@@ -47,8 +44,8 @@
   white-space: nowrap;
 }
 
-.pin-stack__peek.is-white { background: #fff; }
-.pin-stack__peek.is-green { background: #bcd9a5; }
+.pin-stack__peek.is-white { background: #dfe1d3; }
+.pin-stack__peek.is-green { background: #9dac69; }
 .pin-stack__peek.is-yellow { background: #f5d97a; }
 
 /* Redundant once the pin's posts are the grid. */

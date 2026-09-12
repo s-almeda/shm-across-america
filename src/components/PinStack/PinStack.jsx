@@ -17,8 +17,10 @@ function artOffset({ dx = 0, dy = 0, rot = 0 }) {
    The count is written on the top sliver, as if on the note itself. */
 const PEEK_JITTER = 9; // degrees either side of the fan
 
-export default function PinStack({ icon, peeks = [], count = 0, seed = "", focused, clickable }) {
-  const art = ICONS[icon];
+export default function PinStack({ icon, art: swap, peeks = [], count = 0, seed = "", focused, clickable }) {
+  // `art` swaps just the picture (one of the four orange pins); everything
+  // positional still comes from the icon.
+  const art = { ...ICONS[icon], ...swap };
   const tilt = useHoverTilt(TILT_RANGE.pin);
   const anchor = `${art.ax * 100}% ${art.ay * 100}%`;
 
@@ -29,7 +31,7 @@ export default function PinStack({ icon, peeks = [], count = 0, seed = "", focus
   return (
     <div
       className={cls}
-      style={{ transformOrigin: anchor, "--pin-focus-scale": art.focusScale ?? 1 }}
+      style={{ transformOrigin: anchor }}
       onMouseEnter={tilt}
     >
       {/* Pinned to the icon's anchor, not the middle of the art, so an

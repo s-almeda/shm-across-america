@@ -1,0 +1,20 @@
+/* A zero-size point sitting exactly where the camera parked the pin. Scaling
+   from 0 0 means the sticker grows away from that point rather than drifting
+   off it. Above the notes and the place chip -- it's the top sticker in the
+   collage. Not interactive, so it can't eat scrolls meant for the notes. */
+.pin-sticker {
+  position: absolute;
+  left: var(--anchor-x);
+  top: var(--anchor-y);
+  z-index: 7;
+  width: 0;
+  height: 0;
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+
+.pin-sticker__art {
+  display: block;
+  image-rendering: pixelated;
+  filter: drop-shadow(var(--shadow-art));
+}

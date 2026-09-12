@@ -19,8 +19,9 @@ export const PIN_ANCHOR = { x: 78, y: 92 }; // where a focused pin parks
  *
  * blend: multiply art that isn't cut out into the paper.
  *
- * focusScale: how much bigger the art gets while its pin is open, where it
- * doubles as the heading's pin. The car is already big, so it stays at 1.
+ * focusScale: how much bigger the sticker copy is than the map art while the
+ * pin is open (see PinSticker). It also sets where the place chip and back
+ * button sit, since those flank the sticker, not the map pin.
  */
 export const TOOLTIP_GAP = 8; // clearance between the art and a bubble's nib
 const BACK_BTN_STACK = 68; // gap + back-to-map button + gap, above the art
@@ -86,7 +87,31 @@ export function focusAnchor(iconKey) {
 }
 
 export const ICONS = {
-  car: { src: "/assets/car.png", w: 160, h: 98, blend: false, ax: 0.7, ay: 0.2, dx: 38, dy: -54, rot: 0.85, focusScale: 1 },
+  car: { src: "/assets/car.png", w: 160, h: 98, blend: false, ax: 0.7, ay: 0.2, dx: 38, dy: -54, rot: 0.85, focusScale: 1.2 },
   tack: { src: "/assets/tacks/tack_1.png", w: 26, h: 31, blend: false, ax: 0.5, ay: 0.5, focusScale: 1.7 },
   pin: { src: "/assets/pins/pin_1.png", w: 22, h: 24, blend: false, ax: 0.5, ay: 0.5, focusScale: 1.7 },
 };
+
+/*
+ * The four orange pins are hand-drawn, so a planned stop picks one instead of
+ * the whole route looking stamped. Sizes are each source file at half scale
+ * (the files differ by a pixel or two); ICONS.pin still owns the geometry, so
+ * a variant only swaps the picture.
+ */
+export const PIN_VARIANTS = [
+  { src: "/assets/pins/pin_1.png", w: 22, h: 24 },
+  { src: "/assets/pins/pin_2.png", w: 21, h: 24 },
+  { src: "/assets/pins/pin_3.png", w: 22, h: 26 },
+  { src: "/assets/pins/pin_4.png", w: 21, h: 25 },
+];
+
+/* Hashed from the stop so it keeps the same pin across reloads. */
+export function pinVariantFor(seed) {
+  let h = 2166136261;
+  for (let i = 0; i < seed.length; i++) {
+    h ^= seed.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  h ^= h >>> 16;
+  return PIN_VARIANTS[(h >>> 0) % PIN_VARIANTS.length];
+}

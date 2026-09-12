@@ -3,17 +3,17 @@
 :root {
   /* paper + ink */
   --desk: #5e5648;
-  --paper: #fffdf5;
-  --paper-header: #fffdf8;
+  --paper: #efecdf;
+  --paper-header: #d3dfdc;
   --paper-note: #fdfcf6;
-  --paper-map: #fdf3e7;
-  --postit-green: #d7ecc4;
-  --postit-yellow: #fbe79a;
+  --paper-map: #e8ded1;
+  --postit-green: #c3c488;
+  --postit-yellow: #eace79;
   --ink: #2b2b2b;
   --ink-soft: #6b6b5a;
   --ink-hand: rgba(0, 0, 0, 0.76);
-  --ink-stamp-green: #5f6b52;
-  --ink-stamp-yellow: #6b6b4a;
+  --ink-stamp-green: #4c6136;
+  --ink-stamp-yellow: #836e31;
   --flag-red: #ba5f0f;
   --route-red: #c2660f;
 
@@ -77,8 +77,8 @@
   --shadow-peek: 0 1px 2px var(--shadow-ink);
   --lift-ease: transform 0.16s ease-out, box-shadow 0.16s ease-out;
 
-  /* The map recedes while you're reading a pin's notes. Applied to Leaflet's
-     tile pane only, so pins, cards and the route line stay crisp. */
+  /* The map recedes while you're reading a pin's notes -- tiles and the pins
+     stuck to them. The notes and the sticker copy of the pin stay crisp. */
   --map-dim-blur: 2.5px;
   --map-dim-brightness: 0.78;
 
@@ -93,13 +93,10 @@
 }
 
 /*
- * Breakpoints are 900px and 640px; media queries can't read a custom
- * property, so those numbers are repeated literally here and in each
- * component's single media block. Shared sizes change here, not in
- * components -- that's why this file gets two blocks and they get one.
+ * One breakpoint, 640px. Media queries can't read a custom property, so that
+ * number is repeated literally here and in each component's media block.
+ * Shared responsive sizes change here, not in components.
  */
-
-/* Three 205px columns need ~750px of frame; below that, drop to two. */
 @media (max-width: 640px) {
   :root {
     /* Two columns at this width would be too narrow to read. */
@@ -111,8 +108,8 @@
     --note-w: 150px;
     --note-h: 94px;
     --note-inset: 0.9rem;
-    --paw-w: 76px; /* scaled up about 25% */
-    --paw-h: 64px;
+    --paw-w: 61px; /* 1/4 of 244x202 */
+    --paw-h: 51px;
     --point-w: 40px;
     --point-h: 23px;
   }

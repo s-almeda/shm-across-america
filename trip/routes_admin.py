@@ -317,6 +317,25 @@ def register_admin_routes(app):
             flash("A stop needs both a name and a location.")
         return redirect(url_for("admin.dashboard"))
 
+    @bp.route(f"/{path}/stops/<int:stop_id>/toggle", methods=["POST"])
+    def toggle_stop(stop_id):
+        """Hide a planned stop from the public map without losing it -- for
+        thinning out the pins once a place has actually been visited."""
+        db = get_db()
+        row = db.execute(
+            "SELECT name, hidden FROM planned_stops WHERE id = ?", (stop_id,)
+        ).fetchone()
+        if not row:
+            flash("That stop is gone.")
+            return redirect(url_for("admin.dashboard"))
+        now_hidden = 0 if row["hidden"] else 1
+        db.execute("UPDATE planned_stops SET hidden = ? WHERE id = ?", (now_hidden, stop_id))
+        db.commit()
+        flash(
+            f"{row['name']} is {'hidden from' if now_hidden else 'back on'} the map.", "ok"
+        )
+        return redirect(url_for("admin.dashboard"))
+
     @bp.route(f"/{path}/stops/<int:stop_id>/delete", methods=["POST"])
     def delete_stop(stop_id):
         db = get_db()

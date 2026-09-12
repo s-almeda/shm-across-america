@@ -1,4 +1,5 @@
 import PostGrid from "../PostGrid/PostGrid";
+import PinSticker from "../PinSticker/PinSticker";
 import WriteNoteSticker from "../WriteNoteSticker/WriteNoteSticker";
 import { fmtDateRange } from "../../lib/format";
 import { focusAnchor, headerOffsetX, pinIconFor } from "../../map/config";
@@ -16,6 +17,7 @@ export default function PinView({
   onNext,
   hasPrev,
   hasNext,
+  showNotes,
 }) {
   /* The map is frozen underneath, so the header pin can be placed once at
      the anchor -- where the camera parked the real pin -- and stay aligned
@@ -40,9 +42,11 @@ export default function PinView({
         ← back to map
       </button>
 
-      {/* No pin image here -- the real Leaflet marker is sitting at the
-          anchor and grows to serve as the heading's pin. */}
-      <div className="pin-view__header">
+      <PinSticker icon={icon} />
+
+      {/* Keyed so the slide-in replays for each stop, even though the view
+          itself stays mounted across a step. */}
+      <div className="pin-view__header" key={pin.id}>
         <div className="pin-view__place">{pin.label || "Somewhere out there"}</div>
         <div className="pin-view__dates">{fmtDateRange(items, pin.created_at)}</div>
       </div>
@@ -58,13 +62,17 @@ export default function PinView({
         <img className="pin-view__point" src="/assets/point.png" alt="" />
       </button>
 
-      <PostGrid
-        items={items}
-        flipKey={pin.id}
-        anchor={spot}
-        onOpenPhoto={onOpenPhoto}
-        onFlag={onFlag}
-      />
+      {/* The only thing that leaves during a step -- it has to, so it can fan
+          out of the new pin on arrival. */}
+      {showNotes && (
+        <PostGrid
+          items={items}
+          flipKey={pin.id}
+          anchor={spot}
+          onOpenPhoto={onOpenPhoto}
+          onFlag={onFlag}
+        />
+      )}
 
       <button
         type="button"

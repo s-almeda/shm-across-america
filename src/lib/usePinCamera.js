@@ -1,12 +1,24 @@
 import { useEffect, useRef } from "react";
 import { focusAnchor, pinIconFor, ZOOM_DETAIL } from "../map/config";
 
+/* A hop across town shouldn't take as long as a day's drive. Square-rooted so
+   medium distances don't all pile up against the cap. */
+const FLY_MIN_SECONDS = 0.25;
+const FLY_MAX_SECONDS = 1.75;
+const FLY_FULL_KM = 400; // distance at which a flight takes the full time
+
 const GESTURES = [
   "dragging", "scrollWheelZoom", "doubleClickZoom", "touchZoom", "boxZoom", "keyboard",
 ];
 
 function setGestures(map, on) {
   GESTURES.forEach((g) => map[g] && map[g][on ? "enable" : "disable"]());
+}
+
+function flightSeconds(map, to) {
+  const km = map.distance(map.getCenter(), to) / 1000;
+  const reach = Math.min(1, Math.sqrt(km / FLY_FULL_KM));
+  return FLY_MIN_SECONDS + (FLY_MAX_SECONDS - FLY_MIN_SECONDS) * reach;
 }
 
 /* Center the map so `latlng` lands at `anchor` instead of the middle. */
@@ -18,17 +30,14 @@ function anchoredCenter(map, latlng, zoom, anchor) {
 }
 
 /*
- * Opening a pin moves the camera to its focus anchor and freezes the map.
+ * Opening a pin flies the camera to its focus anchor and freezes the map.
  * Closing just unfreezes and leaves the camera where it is, so you can carry
- * on panning around the neighbourhood you were just reading about.
+ * on panning around the neighbourhood you were reading about.
  *
- * `cutRef` is read at move time, not passed as a prop, so it's already
- * current when the effect fires: true means jump straight there instead of
- * flying. Stepping between stops uses it -- flyTo arcs out and back in by an
- * amount proportional to the distance, which between two stops hundreds of
- * miles apart is a disorienting zoom to nothing and back.
+ * `onApproach` fires shortly before touchdown, so the ground can fade back in
+ * and already be there when the notes arrive.
  */
-export function usePinCamera(map, openPin, onArrive, cutRef) {
+export function usePinCamera(map, openPin, onArrive, { onApproach } = {}) {
   const arrive = useRef(onArrive);
   arrive.current = onArrive;
 
@@ -48,25 +57,21 @@ export function usePinCamera(map, openPin, onArrive, cutRef) {
     // anchor -- otherwise it's against the old size.
     map.invalidateSize();
 
-    const target = anchoredCenter(
-      map,
-      [openPin.lat, openPin.lng],
-      ZOOM_DETAIL,
-      focusAnchor(pinIconFor(openPin)),
-    );
-
-    if (cutRef?.current) {
-      // setView fires moveend synchronously, so arrival is called directly
-      // rather than waiting for an event that has already gone by.
-      map.setView(target, ZOOM_DETAIL, { animate: false });
-      arrive.current?.();
-      return;
-    }
-
+    const to = { lat: openPin.lat, lng: openPin.lng };
+    const seconds = flightSeconds(map, to);
     const landed = () => arrive.current?.();
-    map.flyTo(target, ZOOM_DETAIL, { duration: 0.7 });
+
+    map.flyTo(anchoredCenter(map, to, ZOOM_DETAIL, focusAnchor(pinIconFor(openPin))), ZOOM_DETAIL, {
+      duration: seconds,
+    });
     map.once("moveend", landed);
-    return () => map.off("moveend", landed);
+
+    const nearly = setTimeout(() => onApproach?.(), seconds * 1000 * 0.72);
+
+    return () => {
+      clearTimeout(nearly);
+      map.off("moveend", landed);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map, pinId]);
 }

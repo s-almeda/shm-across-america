@@ -33,7 +33,8 @@ CREATE TABLE IF NOT EXISTS planned_stops (
     name TEXT NOT NULL,
     lat REAL NOT NULL,
     lng REAL NOT NULL,
-    note TEXT
+    note TEXT,
+    hidden INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS comments (
@@ -85,6 +86,7 @@ def init_db(app):
         db.executescript(SCHEMA)
         _add_column(db, "photos", "caption", "TEXT")
         _add_column(db, "comments", "author_color", "TEXT")
+        _add_column(db, "planned_stops", "hidden", "INTEGER NOT NULL DEFAULT 0")
         db.execute(
             "INSERT OR IGNORE INTO settings (key, value) VALUES ('comments_enabled', 'true')"
         )
