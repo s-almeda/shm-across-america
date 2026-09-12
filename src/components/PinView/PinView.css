@@ -41,8 +41,10 @@
   border: 1px solid var(--ink);
   box-shadow: var(--shadow-hard);
   padding: 0.25rem 0.6rem;
-  /* Mounts only once the camera has landed, so it can just play on entry. */
-  animation: pin-view-header-in 0.34s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  /* Mounts only once the camera has landed, so it can just play on entry.
+     The delay covers the pin sticker's own fade-up (0.22s), so the chip
+     really does slide out of a pin that's already there. */
+  animation: pin-view-header-in 0.34s cubic-bezier(0.2, 0.8, 0.2, 1) 0.22s both;
 }
 
 /* Slides out to the right from behind the tack. */

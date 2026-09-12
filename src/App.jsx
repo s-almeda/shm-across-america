@@ -183,11 +183,12 @@ export default function App() {
           </>
         )}
 
-        {/* Stays mounted through a step: only the notes come and go, so the
-            arrows, back button and paw sticker don't blink out and back. */}
+        {/* Stays mounted through a step: only the notes and the place header
+            come and go, so the arrows, back button and paw sticker don't
+            blink out and back. */}
         {openPin && (
           <PinView
-            showNotes={!flying}
+            arrived={!flying}
             pin={openPin}
             items={items}
             commentsEnabled={trip.comments_enabled}
@@ -210,7 +211,7 @@ export default function App() {
       )}
 
       {modal === "comment" && (
-        <IndexCardModal title="LEAVE A NOTE FOR SHM!" onClose={() => setModal(null)}>
+        <IndexCardModal title="leave a note for shm! :3" onClose={() => setModal(null)}>
           <CommentForm onSubmit={submitComment} />
         </IndexCardModal>
       )}

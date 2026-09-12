@@ -26,18 +26,37 @@ export default function CommentForm({ onSubmit }) {
     <form className="comment-form" onSubmit={submit}>
       <div className="comment-form__identity">
         <label className="comment-form__field comment-form__field--color">
-          <span className="comment-form__label">pick color</span>
+          <span className="comment-form__label">pick your color</span>
           <input
             type="color"
             className="comment-form__swatch"
             value={color}
             onChange={(e) => setColor(e.target.value)}
-            title="pick color"
+            title="color"
           />
+
+                    <span className="comment-form__label">pick color</span>
+          <input
+            type="color"
+            className="comment-form__swatch"
+            value={color}
+            onChange={(e) => setColor(e.target.value)}
+            title="color"
+          />
+
         </label>
 
-        <label className="comment-form__field">
-          <span className="comment-form__label">your name</span>
+
+      </div>
+
+      <textarea
+        placeholder="write your comment here..."
+        value={body}
+        onChange={(e) => setBody(e.target.value)}
+        required
+      />
+              <label className="comment-form__field">
+          <span className="comment-form__label">FROM:</span>
           {/* Typed in the colour they picked, so the name previews live. */}
           <input
             type="text"
@@ -48,14 +67,6 @@ export default function CommentForm({ onSubmit }) {
             required
           />
         </label>
-      </div>
-
-      <textarea
-        placeholder="Say something..."
-        value={body}
-        onChange={(e) => setBody(e.target.value)}
-        required
-      />
       <button type="submit" disabled={busy}>
         {busy ? "Posting…" : "Post"}
       </button>

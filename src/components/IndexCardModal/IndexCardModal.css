@@ -33,18 +33,21 @@
 
 .index-card-modal__head {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.35);
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2rem;
+  border-bottom: 1px dotted rgba(0, 0, 0, 0.35);
   padding-bottom: 0.5rem;
-  margin-bottom: 0.85rem;
+  margin-bottom: 0.5rem;
+  
 }
 
 .index-card-modal__title {
   font-family: var(--font-hand);
-  font-size: 1.05rem;
+  font-size: 1.15rem;
   color: rgba(0, 0, 0, 0.8);
+  font-weight: bold;
+  text-align: center;
 }
 
 .index-card-modal__close {

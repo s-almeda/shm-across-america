@@ -17,7 +17,7 @@ export default function PinView({
   onNext,
   hasPrev,
   hasNext,
-  showNotes,
+  arrived,
 }) {
   /* The map is frozen underneath, so the header pin can be placed once at
      the anchor -- where the camera parked the real pin -- and stay aligned
@@ -42,14 +42,19 @@ export default function PinView({
         ← back to map
       </button>
 
-      <PinSticker icon={icon} />
+      {/* The sticker copy is the arrival, so it isn't drawn mid-flight -- the
+          only pin on screen while moving is the real one down on the map. */}
+      {arrived && <PinSticker icon={icon} />}
 
-      {/* Keyed so the slide-in replays for each stop, even though the view
-          itself stays mounted across a step. */}
-      <div className="pin-view__header" key={pin.id}>
-        <div className="pin-view__place">{pin.label || "Somewhere out there"}</div>
-        <div className="pin-view__dates">{fmtDateRange(items, pin.created_at)}</div>
-      </div>
+      {/* Gone while the camera is moving -- it names the place we're headed
+          for, so it shouldn't be readable until we're there. Keyed so the
+          slide-in replays on each arrival. */}
+      {arrived && (
+        <div className="pin-view__header" key={pin.id}>
+          <div className="pin-view__place">{pin.label || "Somewhere out there"}</div>
+          <div className="pin-view__dates">{fmtDateRange(items, pin.created_at)}</div>
+        </div>
+      )}
 
       <button
         type="button"
@@ -62,9 +67,8 @@ export default function PinView({
         <img className="pin-view__point" src="/assets/point.png" alt="" />
       </button>
 
-      {/* The only thing that leaves during a step -- it has to, so it can fan
-          out of the new pin on arrival. */}
-      {showNotes && (
+      {/* Leaves during a step so it can fan out of the new pin on arrival. */}
+      {arrived && (
         <PostGrid
           items={items}
           flipKey={pin.id}

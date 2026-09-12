@@ -17,4 +17,26 @@
   display: block;
   image-rendering: pixelated;
   filter: drop-shadow(var(--shadow-art));
+  /* Mounted only on arrival, so this replays for every stop: the sticker
+     settles up out of the map it was just flown across. Quick and short --
+     it has to be done before the place chip slides out of it. */
+
+}
+
+@keyframes pin-sticker-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(-7px) rotate(var(--sticker-rot, 0deg));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(var(--sticker-rot, 0deg));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pin-sticker__art {
+    animation: none;
+    transform: rotate(var(--sticker-rot, 0deg));
+  }
 }

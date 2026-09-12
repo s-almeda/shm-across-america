@@ -20,7 +20,13 @@ export default function PinSticker({ icon }) {
   const scale = art.focusScale ?? 1;
 
   return (
-    <div className="pin-sticker" style={{ transform: `scale(${scale})` }}>
+    /* The resting tilt goes out as a variable rather than an inline
+       transform: the arrival animation owns `transform`, and it has to carry
+       the rotation along or the sticker would snap upright for its duration. */
+    <div
+      className="pin-sticker"
+      style={{ transform: `scale(${scale})`, "--sticker-rot": `${art.rot ?? 0}deg` }}
+    >
       <img
         className="pin-sticker__art"
         src={art.src}
@@ -29,7 +35,6 @@ export default function PinSticker({ icon }) {
           height: art.h,
           marginLeft: -(art.w * art.ax) + (art.dx ?? 0),
           marginTop: -(art.h * art.ay) + (art.dy ?? 0),
-          transform: art.rot ? `rotate(${art.rot}deg)` : undefined,
         }}
         alt=""
       />
