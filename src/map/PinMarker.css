@@ -1,0 +1,12 @@
+/* Leaflet's default divIcon chrome, undone. overflow must win over
+   Leaflet's own .leaflet-marker-icon rule, hence the !important. */
+.pin-marker {
+  background: none;
+  border: none;
+  overflow: visible !important;
+}
+
+.pin-marker__mount {
+  width: 100%;
+  height: 100%;
+}

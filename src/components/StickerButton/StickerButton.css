@@ -1,0 +1,28 @@
+.sticker-button {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  box-shadow: var(--sticker-shadow, none);
+  transform: rotate(var(--rot, 0deg));
+  transition: var(--lift-ease);
+}
+
+/* Lift off the surface and re-roll the tilt (--rot-hover, written on
+   mouseenter since CSS can't randomise). */
+.sticker-button:hover {
+  transform: translateY(var(--lift-y)) rotate(var(--rot-hover, var(--rot, 0deg)));
+  box-shadow: var(--shadow-lift);
+}
+
+.sticker-button:focus-visible {
+  outline: 2px solid rgba(0, 0, 0, 0.6);
+  outline-offset: 2px;
+}

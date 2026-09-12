@@ -1,0 +1,75 @@
+.pin-stack {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform: rotate(var(--rot, 0deg));
+  transition: var(--lift-ease);
+}
+
+.pin-stack.is-clickable {
+  cursor: pointer;
+}
+
+/* Hover re-rolls the tilt and grows the pin slightly. transform-origin is
+   the icon's own anchor, so an off-centre pin doesn't drift as it scales. */
+.pin-stack.is-clickable:not(.is-focused):hover {
+  transform: rotate(var(--rot-hover, var(--rot, 0deg))) scale(1.09);
+}
+
+/* While its pin is open this marker *is* the heading's pin, so it grows to
+   read at that size. Per-icon, via --pin-focus-scale in config.js. */
+.pin-stack.is-focused {
+  transform: rotate(var(--rot, 0deg)) scale(var(--pin-focus-scale, 1));
+}
+
+.pin-stack__layer {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.pin-stack__peek {
+  position: absolute;
+  border-radius: 2px;
+  box-shadow: var(--shadow-peek);
+}
+
+/* Handwritten on the top note of the stack. Sits below the pin art, which
+   overlaps the stack's top edge, so it reads as written on the paper. */
+.pin-stack__count {
+  position: absolute;
+  inset: auto 0 0.2rem;
+  text-align: center;
+  font-family: var(--font-hand);
+  font-size: 0.62rem;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.62);
+  white-space: nowrap;
+}
+
+.pin-stack__peek.is-white { background: #fff; }
+.pin-stack__peek.is-green { background: #bcd9a5; }
+.pin-stack__peek.is-yellow { background: #f5d97a; }
+
+/* Redundant once the pin's posts are the grid. */
+.pin-stack.is-focused .pin-stack__layer {
+  opacity: 0;
+}
+
+/* Hand-drawn cutouts, so no white plate behind them -- just a shadow to
+   lift them off the paper. Pixel art: nearest-neighbour, never smoothed. */
+.pin-stack__art {
+  display: block;
+  position: relative;
+  z-index: 2;
+  image-rendering: pixelated;
+  filter: drop-shadow(var(--shadow-art));
+}
+
+/* Art that isn't cut out yet: multiply drops its white box. Can't combine
+   with drop-shadow -- a filter isolates the element, leaving the blend
+   nothing to composite against. */
+.pin-stack__art.is-blended {
+  mix-blend-mode: multiply;
+  filter: none;
+}

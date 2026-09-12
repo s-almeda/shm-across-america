@@ -1,0 +1,26 @@
+import "./PostitCard.css";
+
+const FLAG_LABEL = "Flag this comment";
+
+export default function PostitCard({ tone, stamp, body, rot, onFlag }) {
+  return (
+    <div className={`postit-card is-${tone}`} style={{ "--rot": rot }}>
+      {onFlag && (
+        <button
+          type="button"
+          className="postit-card__flag"
+          title={FLAG_LABEL}
+          aria-label={FLAG_LABEL}
+          onClick={onFlag}
+        >
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+            <line x1="5" y1="3" x2="5" y2="21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            <path d="M5 4 L19 4 L15 8 L19 12 L5 12 Z" fill="currentColor" />
+          </svg>
+        </button>
+      )}
+      <div className="postit-card__stamp">{stamp}</div>
+      <p className="postit-card__body">{body}</p>
+    </div>
+  );
+}

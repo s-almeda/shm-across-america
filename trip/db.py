@@ -24,7 +24,8 @@ CREATE TABLE IF NOT EXISTS photos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     pin_id INTEGER NOT NULL REFERENCES pins(id),
     file_path TEXT NOT NULL,
-    created_at TEXT NOT NULL
+    created_at TEXT NOT NULL,
+    caption TEXT
 );
 
 CREATE TABLE IF NOT EXISTS planned_stops (
@@ -69,10 +70,19 @@ def close_db(_exc=None):
         db.close()
 
 
+def _add_column(db, table, column, decl):
+    """CREATE TABLE IF NOT EXISTS skips tables that already exist, so new
+    columns need an explicit ALTER against the live database."""
+    existing = {row["name"] for row in db.execute(f"PRAGMA table_info({table})")}
+    if column not in existing:
+        db.execute(f"ALTER TABLE {table} ADD COLUMN {column} {decl}")
+
+
 def init_db(app):
     with app.app_context():
         db = get_db()
         db.executescript(SCHEMA)
+        _add_column(db, "photos", "caption", "TEXT")
         db.execute(
             "INSERT OR IGNORE INTO settings (key, value) VALUES ('comments_enabled', 'true')"
         )

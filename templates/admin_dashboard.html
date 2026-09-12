@@ -15,21 +15,45 @@
     a.logout, a.back-to-map { color: #666; font-size: 0.85rem; }
     .card { background: white; border-radius: 12px; padding: 1rem; margin-bottom: 0.75rem; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
     .card.current { border: 2px solid #2c5f2d; }
+    /* The pin you were editing, after a save redirect. */
+    .card:target { box-shadow: 0 0 0 3px #e0c96a; }
     .badge { display: inline-block; font-size: 0.7rem; background: #2c5f2d; color: white; border-radius: 6px; padding: 0.1rem 0.4rem; margin-left: 0.4rem; }
-    .row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-    input, textarea { width: 100%; padding: 0.5rem; font-size: 0.95rem; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 0.5rem; }
-    button { padding: 0.5rem 0.9rem; font-size: 0.9rem; border: none; border-radius: 8px; background: #2c5f2d; color: white; }
+    .row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+    label { display: block; font-size: 0.75rem; color: #666; margin-bottom: 0.15rem; }
+    input, textarea { width: 100%; padding: 0.5rem; font-size: 0.95rem; font-family: inherit; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 0.5rem; }
+    textarea { min-height: 4.5rem; resize: vertical; line-height: 1.4; }
+    input[type="datetime-local"] { width: auto; }
+    /* 44px minimum so these are tappable on a phone. */
+    button { min-height: 44px; padding: 0.5rem 0.9rem; font-size: 0.9rem; border: none; border-radius: 8px; background: #2c5f2d; color: white; cursor: pointer; }
     button.secondary { background: #888; }
     button.danger { background: #b00020; }
+    button.quiet { background: none; color: #b00020; text-decoration: underline; min-height: 0; padding: 0.2rem; }
     form.inline { display: inline; }
-    .msg, .photo-row { font-size: 0.9rem; padding: 0.3rem 0; border-top: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
-    .photo-row img { max-width: 60px; max-height: 60px; border-radius: 6px; object-fit: cover; }
-    .flash { color: #b00020; margin-bottom: 1rem; }
+    fieldset { border: 1px solid #e4ddd0; border-radius: 10px; padding: 0.75rem; margin: 0 0 0.75rem; }
+    legend { font-size: 0.8rem; color: #666; padding: 0 0.35rem; }
+    .item { border-top: 1px solid #eee; padding: 0.6rem 0 0.2rem; }
+    .item-head { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem; }
+    .item-kind { font-size: 0.75rem; color: #666; }
+    .photo-item { display: flex; gap: 0.75rem; align-items: flex-start; }
+    .photo-item img { width: 84px; height: 84px; border-radius: 6px; object-fit: cover; flex: none; background: #eee; }
+    .photo-item .photo-fields { flex: 1; min-width: 0; }
+    .flash { padding: 0.5rem 0.75rem; border-radius: 8px; margin-bottom: 0.5rem; font-size: 0.9rem; }
+    .flash.error { background: #fde8ea; color: #b00020; }
+    .flash.ok { background: #e6f2e6; color: #1d4a1e; }
+    .save-status { font-size: 0.8rem; margin-left: 0.5rem; }
+    .save-status.ok { color: #1d4a1e; }
+    .save-status.error { color: #b00020; }
+    .hint { font-size: 0.75rem; color: #888; margin: -0.25rem 0 0.5rem; }
     details summary { cursor: pointer; font-size: 0.9rem; color: #2c5f2d; margin-top: 0.5rem; }
     .location-error { color: #b00020; font-size: 0.85rem; margin: -0.25rem 0 0.5rem; }
     .location-confirm { background: #fef7e0; border: 1px solid #e0c96a; border-radius: 8px; padding: 0.6rem 0.75rem; margin: -0.25rem 0 0.5rem; }
     .location-confirm .confirm-text { margin: 0 0 0.5rem; font-size: 0.9rem; }
     .location-confirm .row button { padding: 0.4rem 0.8rem; font-size: 0.85rem; }
+    @media (max-width: 560px) {
+      body { padding: 0.6rem; }
+      .photo-item { flex-direction: column; }
+      .photo-item img { width: 100%; height: 160px; }
+    }
   </style>
 </head>
 <body>
@@ -41,8 +65,10 @@
     </div>
   </header>
 
-  {% with messages = get_flashed_messages() %}
-    {% if messages %}{% for m in messages %}<div class="flash">{{ m }}</div>{% endfor %}{% endif %}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, m in messages %}
+      <div class="flash {{ 'ok' if category == 'ok' else 'error' }}">{{ m }}</div>
+    {% endfor %}
   {% endwith %}
 
   <h2>Comments</h2>
@@ -63,7 +89,10 @@
       <p>{{ c.body }}</p>
       <div class="row">
         <form method="post" action="{{ url_for('admin.restore_comment', comment_id=c.id) }}"><button>Restore</button></form>
-        <form method="post" action="{{ url_for('admin.delete_comment', comment_id=c.id) }}"><button class="danger">Delete</button></form>
+        <form method="post" action="{{ url_for('admin.delete_comment', comment_id=c.id) }}"
+              onsubmit="return confirm('Delete this comment for good?');">
+          <button class="danger">Delete</button>
+        </form>
       </div>
     </div>
   {% endfor %}
@@ -72,6 +101,7 @@
   <h2>Add pin</h2>
   <div class="card">
     <form method="post" action="{{ url_for('admin.create_pin') }}" class="location-form">
+      <label>Where</label>
       <input type="text" class="location-input" placeholder="Place name, Google Maps link, or lat, lng" required>
       <input type="hidden" class="lat-hidden" name="lat">
       <input type="hidden" class="lng-hidden" name="lng">
@@ -83,68 +113,134 @@
           <button type="button" class="confirm-no secondary">Try again</button>
         </div>
       </div>
-      <input type="text" class="label-input" name="label" placeholder="Label (optional)">
+      <label>Label</label>
+      <input type="text" class="label-input" name="label" placeholder="Optional -- shows as the place name">
       <button type="submit">Add pin (becomes current)</button>
     </form>
   </div>
 
   <h2>Pins</h2>
   {% for pin in pins %}
-    <div class="card {{ 'current' if pin.is_current else '' }}">
+    <div class="card {{ 'current' if pin.is_current else '' }}" id="pin-{{ pin.id }}">
       <strong>{{ pin.label or ('Pin #' ~ pin.id) }}</strong>
-      {% if pin.is_current %}<span class="badge">current</span>{% endif %}
-      <div>{{ pin.lat }}, {{ pin.lng }} · {{ pin.created_at }}</div>
+      {% if pin.is_current %}<span class="badge">current -- car is here</span>{% endif %}
+      <div class="item-kind">{{ pin.lat }}, {{ pin.lng }} · added {{ pin.created_at }}</div>
 
       {% for m in pin.messages_list %}
-        <div class="msg">
-          <span>{{ m.text }}</span>
-          <form class="inline" method="post" action="{{ url_for('admin.delete_message', message_id=m.id) }}">
-            <button class="danger" type="submit">x</button>
-          </form>
+        <div class="item" data-save-url="{{ url_for('admin.api_save_message', message_id=m.id) }}">
+          <div class="item-head">
+            <span class="item-kind">Note</span>
+            <form class="inline" method="post"
+                  action="{{ url_for('admin.delete_message', message_id=m.id) }}"
+                  onsubmit="return confirm('Delete this note? This cannot be undone.');">
+              <button class="quiet" type="submit">Delete</button>
+            </form>
+          </div>
+          <textarea class="f-text">{{ m.text }}</textarea>
+          <div class="row">
+            <div>
+              <label>Posted (shows on the postit)</label>
+              <input type="datetime-local" class="f-when" data-iso="{{ m.created_at }}">
+            </div>
+            <button type="button" class="save-btn secondary">Save</button>
+            <span class="save-status"></span>
+          </div>
         </div>
       {% endfor %}
 
       {% for p in pin.photos_list %}
-        <div class="photo-row">
-          <img src="/uploads/{{ p.file_path }}" alt="">
-          <form class="inline" method="post" action="{{ url_for('admin.delete_photo', photo_id=p.id) }}">
-            <button class="danger" type="submit">x</button>
-          </form>
+        <div class="item" data-save-url="{{ url_for('admin.api_save_photo', photo_id=p.id) }}">
+          <div class="item-head">
+            <span class="item-kind">Photo</span>
+            <form class="inline" method="post"
+                  action="{{ url_for('admin.delete_photo', photo_id=p.id) }}"
+                  onsubmit="return confirm('Delete this photo? The file is removed from disk and cannot be recovered.');">
+              <button class="quiet" type="submit">Delete</button>
+            </form>
+          </div>
+          <div class="photo-item">
+            <img src="/uploads/{{ p.file_path }}" alt="">
+            <div class="photo-fields">
+              <label>Caption</label>
+              <input type="text" class="f-caption" value="{{ p.caption or '' }}"
+                     placeholder="Shows under the polaroid">
+              <div class="hint">Leave empty to show the date instead.</div>
+              <div class="row">
+                <div>
+                  <label>Taken</label>
+                  <input type="datetime-local" class="f-when" data-iso="{{ p.created_at }}">
+                </div>
+                <button type="button" class="save-btn secondary">Save</button>
+                <span class="save-status"></span>
+              </div>
+            </div>
+          </div>
         </div>
       {% endfor %}
 
       <details>
-        <summary>Edit / add</summary>
-        <form method="post" action="{{ url_for('admin.edit_pin', pin_id=pin.id) }}" class="location-form">
-          <input type="text" class="location-input" value="{{ pin.lat }}, {{ pin.lng }}" required>
-          <input type="hidden" class="lat-hidden" name="lat" value="{{ pin.lat }}">
-          <input type="hidden" class="lng-hidden" name="lng" value="{{ pin.lng }}">
-          <div class="location-error hidden"></div>
-          <div class="location-confirm hidden">
-            <p class="confirm-text"></p>
-            <div class="row">
-              <button type="button" class="confirm-yes">Use this</button>
-              <button type="button" class="confirm-no secondary">Try again</button>
+        <summary>Add / edit this pin</summary>
+
+        <fieldset data-create-url="{{ url_for('admin.api_create_message', pin_id=pin.id) }}">
+          <legend>New note</legend>
+          <textarea class="f-text" placeholder="What happened here? Line breaks are kept."></textarea>
+          <div class="row">
+            <div>
+              <label>Posted</label>
+              <input type="datetime-local" class="f-when" data-iso="now">
             </div>
+            <button type="button" class="create-btn">Add note</button>
+            <span class="save-status"></span>
           </div>
-          <input type="text" class="label-input" name="label" value="{{ pin.label or '' }}" placeholder="Label">
-          <button type="submit">Save</button>
+          <div class="hint">⌘/Ctrl + Enter posts.</div>
+        </fieldset>
+
+        <form method="post" action="{{ url_for('admin.add_photo', pin_id=pin.id) }}"
+              enctype="multipart/form-data">
+          <fieldset>
+            <legend>New photo</legend>
+            <input type="file" name="photo" accept="image/*" required>
+            <label>Caption</label>
+            <input type="text" name="caption" placeholder="Optional">
+            <div class="row">
+              <div>
+                <label>Taken</label>
+                <input type="datetime-local" class="f-when" data-iso="now" data-name="created_at">
+              </div>
+              <button type="submit">Upload photo</button>
+            </div>
+          </fieldset>
         </form>
-        <form method="post" action="{{ url_for('admin.add_message', pin_id=pin.id) }}">
-          <input type="text" name="text" placeholder="Add a note">
-          <button type="submit">Add note</button>
-        </form>
-        <form method="post" action="{{ url_for('admin.add_photo', pin_id=pin.id) }}" enctype="multipart/form-data">
-          <input type="file" name="photo" accept="image/*">
-          <button type="submit">Upload photo</button>
-        </form>
+
+        <fieldset>
+          <legend>Location &amp; label</legend>
+          <form method="post" action="{{ url_for('admin.edit_pin', pin_id=pin.id) }}" class="location-form">
+            <label>Where</label>
+            <input type="text" class="location-input" value="{{ pin.lat }}, {{ pin.lng }}" required>
+            <input type="hidden" class="lat-hidden" name="lat" value="{{ pin.lat }}">
+            <input type="hidden" class="lng-hidden" name="lng" value="{{ pin.lng }}">
+            <div class="location-error hidden"></div>
+            <div class="location-confirm hidden">
+              <p class="confirm-text"></p>
+              <div class="row">
+                <button type="button" class="confirm-yes">Use this</button>
+                <button type="button" class="confirm-no secondary">Try again</button>
+              </div>
+            </div>
+            <label>Label</label>
+            <input type="text" class="label-input" name="label" value="{{ pin.label or '' }}" placeholder="Label">
+            <button type="submit">Save location</button>
+          </form>
+        </fieldset>
+
         <div class="row">
           {% if not pin.is_current %}
           <form method="post" action="{{ url_for('admin.make_current', pin_id=pin.id) }}">
-            <button type="submit">Make current</button>
+            <button type="submit">Move the car here</button>
           </form>
           {% endif %}
-          <form method="post" action="{{ url_for('admin.delete_pin', pin_id=pin.id) }}" onsubmit="return confirm('Delete this pin and everything on it?');">
+          <form method="post" action="{{ url_for('admin.delete_pin', pin_id=pin.id) }}"
+                onsubmit="return confirm('Delete this pin and every note and photo on it? This cannot be undone.');">
             <button type="submit" class="danger">Delete pin</button>
           </form>
         </div>
@@ -155,7 +251,9 @@
   <h2>Planned stops</h2>
   <div class="card">
     <form method="post" action="{{ url_for('admin.create_stop') }}" class="location-form">
+      <label>Name</label>
       <input type="text" name="name" placeholder="Name" required>
+      <label>Where</label>
       <input type="text" class="location-input" placeholder="Place name, Google Maps link, or lat, lng" required>
       <input type="hidden" class="lat-hidden" name="lat">
       <input type="hidden" class="lng-hidden" name="lng">
@@ -167,15 +265,17 @@
           <button type="button" class="confirm-no secondary">Try again</button>
         </div>
       </div>
-      <input type="text" name="note" placeholder="Note (optional)">
+      <label>Note</label>
+      <input type="text" name="note" placeholder="Optional">
       <button type="submit">Add stop</button>
     </form>
   </div>
   {% for stop in stops %}
     <div class="card">
       <strong>{{ stop.name }}</strong>
-      <div>{{ stop.lat }}, {{ stop.lng }}{% if stop.note %} · {{ stop.note }}{% endif %}</div>
-      <form method="post" action="{{ url_for('admin.delete_stop', stop_id=stop.id) }}">
+      <div class="item-kind">{{ stop.lat }}, {{ stop.lng }}{% if stop.note %} · {{ stop.note }}{% endif %}</div>
+      <form method="post" action="{{ url_for('admin.delete_stop', stop_id=stop.id) }}"
+            onsubmit="return confirm('Delete this planned stop?');">
         <button type="submit" class="danger">Delete</button>
       </form>
     </div>
@@ -183,6 +283,134 @@
 
   <script>
     const RESOLVE_URL = {{ url_for('admin.resolve_location_route')|tojson }};
+
+    // ---------- date fields ----------
+    // Stored timestamps are UTC ISO; datetime-local works in the browser's own
+    // timezone, so every value is converted on the way in and out.
+
+    function isoToLocalInput(iso) {
+      const d = iso === "now" ? new Date() : new Date(iso);
+      if (isNaN(d)) return "";
+      const pad = (n) => String(n).padStart(2, "0");
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    function localInputToIso(value) {
+      if (!value) return null;
+      const d = new Date(value);
+      return isNaN(d) ? null : d.toISOString();
+    }
+
+    document.querySelectorAll(".f-when").forEach((el) => {
+      el.value = isoToLocalInput(el.dataset.iso);
+      // The photo upload is a normal form post, so it needs a real field.
+      if (el.dataset.name) {
+        const hidden = document.createElement("input");
+        hidden.type = "hidden";
+        hidden.name = el.dataset.name;
+        el.closest("form").appendChild(hidden);
+        const sync = () => { hidden.value = localInputToIso(el.value) || ""; };
+        el.addEventListener("change", sync);
+        sync();
+      }
+    });
+
+    // ---------- inline saves ----------
+
+    function setStatus(el, text, kind) {
+      el.textContent = text;
+      el.className = `save-status ${kind || ""}`;
+      if (kind === "ok") setTimeout(() => { if (el.textContent === text) el.textContent = ""; }, 2500);
+    }
+
+    async function postJson(url, payload) {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `Save failed (${res.status}).`);
+      return data;
+    }
+
+    /* On failure the fields are left exactly as typed -- nothing is cleared
+       and the page never reloads, so a long note can't be lost. */
+    function wireSave(item) {
+      const btn = item.querySelector(".save-btn");
+      const status = item.querySelector(".save-status");
+      const text = item.querySelector(".f-text");
+      const caption = item.querySelector(".f-caption");
+      const when = item.querySelector(".f-when");
+
+      async function save() {
+        const payload = { created_at: localInputToIso(when.value) };
+        if (text) payload.text = text.value;
+        if (caption) payload.caption = caption.value;
+        btn.disabled = true;
+        setStatus(status, "Saving…");
+        try {
+          await postJson(item.dataset.saveUrl, payload);
+          setStatus(status, "Saved ✓", "ok");
+        } catch (err) {
+          setStatus(status, err.message, "error");
+        } finally {
+          btn.disabled = false;
+        }
+      }
+
+      btn.addEventListener("click", save);
+      if (text) {
+        text.addEventListener("keydown", (e) => {
+          if ((e.metaKey || e.ctrlKey) && e.key === "Enter") { e.preventDefault(); save(); }
+        });
+      }
+    }
+
+    function wireCreate(box) {
+      const btn = box.querySelector(".create-btn");
+      const status = box.querySelector(".save-status");
+      const text = box.querySelector(".f-text");
+      const when = box.querySelector(".f-when");
+
+      async function create() {
+        if (!text.value.trim()) { setStatus(status, "Write something first.", "error"); return; }
+        btn.disabled = true;
+        setStatus(status, "Posting…");
+        try {
+          await postJson(box.dataset.createUrl, {
+            text: text.value,
+            created_at: localInputToIso(when.value),
+          });
+          // Reload so the new note appears in the list, landing on this pin.
+          location.href = `${location.pathname}#${box.closest(".card").id}`;
+          location.reload();
+        } catch (err) {
+          setStatus(status, err.message, "error");
+          btn.disabled = false;
+        }
+      }
+
+      btn.addEventListener("click", create);
+      text.addEventListener("keydown", (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key === "Enter") { e.preventDefault(); create(); }
+      });
+    }
+
+    document.querySelectorAll("[data-save-url]").forEach(wireSave);
+    document.querySelectorAll("[data-create-url]").forEach(wireCreate);
+
+    // Keep the pin you were editing open after a redirect.
+    if (location.hash.startsWith("#pin-")) {
+      const card = document.querySelector(location.hash);
+      if (card) {
+        const d = card.querySelector("details");
+        if (d) d.open = true;
+        card.scrollIntoView({ block: "center" });
+      }
+    }
+
+    // ---------- location resolving ----------
 
     async function resolveLocation(query) {
       const res = await fetch(RESOLVE_URL, {

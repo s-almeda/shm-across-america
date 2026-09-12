@@ -1,5 +1,6 @@
 import os
 import uuid
+from datetime import datetime, timezone
 
 from flask import (
     Blueprint,
@@ -22,6 +23,26 @@ bp = Blueprint("admin", __name__)
 ALLOWED_IMAGE_EXT = {"png", "jpg", "jpeg", "gif", "webp", "heic"}
 
 
+def parse_when(value, fallback=None):
+    """Timestamps are stored as UTC ISO. Anything the browser sends has already
+    been converted to UTC by the form, but be strict anyway."""
+    if not value or not value.strip():
+        return fallback
+    try:
+        dt = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
+    except ValueError:
+        raise ValueError("Couldn't read that date/time.")
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc).isoformat(timespec="seconds")
+
+
+def pin_anchor(pin_id=None):
+    """Land back on the pin you were editing instead of the top of the page."""
+    url = url_for("admin.dashboard")
+    return f"{url}#pin-{pin_id}" if pin_id else url
+
+
 def register_admin_routes(app):
     path = app.config["ADMIN_PATH"]
 
@@ -32,6 +53,9 @@ def register_admin_routes(app):
         if request.endpoint == "admin.login":
             return None
         if not session.get("admin"):
+            # An inline save must not get a login page back as if it worked.
+            if (request.endpoint or "").startswith("admin.api_"):
+                return jsonify({"error": "Logged out. Reload the page."}), 401
             return redirect(url_for("admin.login"))
         return None
 
@@ -109,12 +133,13 @@ def register_admin_routes(app):
             return redirect(url_for("admin.dashboard"))
 
         db.execute("UPDATE pins SET is_current = 0")
-        db.execute(
+        cur = db.execute(
             "INSERT INTO pins (lat, lng, label, created_at, is_current) VALUES (?, ?, ?, ?, 1)",
             (lat, lng, label, now_iso()),
         )
         db.commit()
-        return redirect(url_for("admin.dashboard"))
+        flash(f"Added {label or 'pin'} and made it current.", "ok")
+        return redirect(pin_anchor(cur.lastrowid))
 
     @bp.route(f"/{path}/pins/<int:pin_id>/edit", methods=["POST"])
     def edit_pin(pin_id):
@@ -127,7 +152,8 @@ def register_admin_routes(app):
             (lat, lng, label, pin_id),
         )
         db.commit()
-        return redirect(url_for("admin.dashboard"))
+        flash("Pin saved.", "ok")
+        return redirect(pin_anchor(pin_id))
 
     @bp.route(f"/{path}/pins/<int:pin_id>/make-current", methods=["POST"])
     def make_current(pin_id):
@@ -135,7 +161,8 @@ def register_admin_routes(app):
         db.execute("UPDATE pins SET is_current = 0")
         db.execute("UPDATE pins SET is_current = 1 WHERE id = ?", (pin_id,))
         db.commit()
-        return redirect(url_for("admin.dashboard"))
+        flash("That pin is now current -- the car sits here.", "ok")
+        return redirect(pin_anchor(pin_id))
 
     @bp.route(f"/{path}/pins/<int:pin_id>/delete", methods=["POST"])
     def delete_pin(pin_id):
@@ -149,58 +176,128 @@ def register_admin_routes(app):
         db.execute("DELETE FROM messages WHERE pin_id = ?", (pin_id,))
         db.execute("DELETE FROM pins WHERE id = ?", (pin_id,))
         db.commit()
+        flash("Pin deleted, along with its notes and photos.", "ok")
         return redirect(url_for("admin.dashboard"))
 
-    @bp.route(f"/{path}/pins/<int:pin_id>/messages/new", methods=["POST"])
-    def add_message(pin_id):
+    # ---------- notes ----------
+
+    @bp.route(f"/{path}/api/pins/<int:pin_id>/messages", methods=["POST"])
+    def api_create_message(pin_id):
         db = get_db()
-        text = (request.form.get("text") or "").strip()
-        if text:
-            db.execute(
-                "INSERT INTO messages (pin_id, text, created_at) VALUES (?, ?, ?)",
-                (pin_id, text, now_iso()),
-            )
-            db.commit()
-        return redirect(url_for("admin.dashboard"))
+        data = request.get_json(silent=True) or {}
+        text = (data.get("text") or "").strip()
+        if not text:
+            return jsonify({"error": "Nothing to post."}), 400
+        try:
+            when = parse_when(data.get("created_at"), now_iso())
+        except ValueError as e:
+            return jsonify({"error": str(e)}), 400
+
+        cur = db.execute(
+            "INSERT INTO messages (pin_id, text, created_at) VALUES (?, ?, ?)",
+            (pin_id, text, when),
+        )
+        db.commit()
+        return jsonify({"id": cur.lastrowid, "text": text, "created_at": when}), 201
+
+    @bp.route(f"/{path}/api/messages/<int:message_id>", methods=["POST"])
+    def api_save_message(message_id):
+        db = get_db()
+        data = request.get_json(silent=True) or {}
+        text = (data.get("text") or "").strip()
+        if not text:
+            return jsonify({"error": "A note can't be empty."}), 400
+        row = db.execute("SELECT created_at FROM messages WHERE id = ?", (message_id,)).fetchone()
+        if not row:
+            return jsonify({"error": "That note is gone."}), 404
+        try:
+            when = parse_when(data.get("created_at"), row["created_at"])
+        except ValueError as e:
+            return jsonify({"error": str(e)}), 400
+
+        db.execute(
+            "UPDATE messages SET text = ?, created_at = ? WHERE id = ?", (text, when, message_id)
+        )
+        db.commit()
+        return jsonify({"id": message_id, "text": text, "created_at": when})
 
     @bp.route(f"/{path}/messages/<int:message_id>/delete", methods=["POST"])
     def delete_message(message_id):
         db = get_db()
+        row = db.execute("SELECT pin_id FROM messages WHERE id = ?", (message_id,)).fetchone()
         db.execute("DELETE FROM messages WHERE id = ?", (message_id,))
         db.commit()
-        return redirect(url_for("admin.dashboard"))
+        flash("Note deleted.", "ok")
+        return redirect(pin_anchor(row["pin_id"] if row else None))
+
+    # ---------- photos ----------
 
     @bp.route(f"/{path}/pins/<int:pin_id>/photos/new", methods=["POST"])
     def add_photo(pin_id):
         db = get_db()
         file = request.files.get("photo")
-        if file and file.filename:
-            ext = secure_filename(file.filename).rsplit(".", 1)[-1].lower()
-            if ext in ALLOWED_IMAGE_EXT:
-                filename = f"{uuid.uuid4().hex}.{ext}"
-                upload_dir = current_app.config["UPLOAD_DIR"]
-                os.makedirs(upload_dir, exist_ok=True)
-                file.save(os.path.join(upload_dir, filename))
-                db.execute(
-                    "INSERT INTO photos (pin_id, file_path, created_at) VALUES (?, ?, ?)",
-                    (pin_id, filename, now_iso()),
-                )
-                db.commit()
-            else:
-                flash("Unsupported image type.")
-        return redirect(url_for("admin.dashboard"))
+        caption = (request.form.get("caption") or "").strip() or None
+        if not (file and file.filename):
+            flash("Pick an image first.")
+            return redirect(pin_anchor(pin_id))
+
+        ext = secure_filename(file.filename).rsplit(".", 1)[-1].lower()
+        if ext not in ALLOWED_IMAGE_EXT:
+            flash(f"Can't use a .{ext} -- try jpg, png, webp, gif or heic.")
+            return redirect(pin_anchor(pin_id))
+
+        try:
+            when = parse_when(request.form.get("created_at"), now_iso())
+        except ValueError as e:
+            flash(str(e))
+            return redirect(pin_anchor(pin_id))
+
+        filename = f"{uuid.uuid4().hex}.{ext}"
+        upload_dir = current_app.config["UPLOAD_DIR"]
+        os.makedirs(upload_dir, exist_ok=True)
+        file.save(os.path.join(upload_dir, filename))
+        db.execute(
+            "INSERT INTO photos (pin_id, file_path, caption, created_at) VALUES (?, ?, ?, ?)",
+            (pin_id, filename, caption, when),
+        )
+        db.commit()
+        flash("Photo uploaded.", "ok")
+        return redirect(pin_anchor(pin_id))
+
+    @bp.route(f"/{path}/api/photos/<int:photo_id>", methods=["POST"])
+    def api_save_photo(photo_id):
+        db = get_db()
+        data = request.get_json(silent=True) or {}
+        row = db.execute("SELECT created_at FROM photos WHERE id = ?", (photo_id,)).fetchone()
+        if not row:
+            return jsonify({"error": "That photo is gone."}), 404
+        caption = (data.get("caption") or "").strip() or None
+        try:
+            when = parse_when(data.get("created_at"), row["created_at"])
+        except ValueError as e:
+            return jsonify({"error": str(e)}), 400
+
+        db.execute(
+            "UPDATE photos SET caption = ?, created_at = ? WHERE id = ?",
+            (caption, when, photo_id),
+        )
+        db.commit()
+        return jsonify({"id": photo_id, "caption": caption, "created_at": when})
 
     @bp.route(f"/{path}/photos/<int:photo_id>/delete", methods=["POST"])
     def delete_photo(photo_id):
         db = get_db()
-        row = db.execute("SELECT file_path FROM photos WHERE id = ?", (photo_id,)).fetchone()
+        row = db.execute(
+            "SELECT pin_id, file_path FROM photos WHERE id = ?", (photo_id,)
+        ).fetchone()
         if row:
             fp = os.path.join(current_app.config["UPLOAD_DIR"], row["file_path"])
             if os.path.exists(fp):
                 os.remove(fp)
             db.execute("DELETE FROM photos WHERE id = ?", (photo_id,))
             db.commit()
-        return redirect(url_for("admin.dashboard"))
+            flash("Photo deleted.", "ok")
+        return redirect(pin_anchor(row["pin_id"] if row else None))
 
     @bp.route(f"/{path}/stops/new", methods=["POST"])
     def create_stop():
@@ -215,6 +312,9 @@ def register_admin_routes(app):
                 (name, lat, lng, note),
             )
             db.commit()
+            flash(f"Added planned stop: {name}.", "ok")
+        else:
+            flash("A stop needs both a name and a location.")
         return redirect(url_for("admin.dashboard"))
 
     @bp.route(f"/{path}/stops/<int:stop_id>/delete", methods=["POST"])
@@ -222,6 +322,7 @@ def register_admin_routes(app):
         db = get_db()
         db.execute("DELETE FROM planned_stops WHERE id = ?", (stop_id,))
         db.commit()
+        flash("Planned stop deleted.", "ok")
         return redirect(url_for("admin.dashboard"))
 
     @bp.route(f"/{path}/comments/toggle", methods=["POST"])
@@ -235,6 +336,7 @@ def register_admin_routes(app):
             "UPDATE settings SET value = ? WHERE key = 'comments_enabled'", (new_value,)
         )
         db.commit()
+        flash(f"Comments are now {'on' if new_value == 'true' else 'off'}.", "ok")
         return redirect(url_for("admin.dashboard"))
 
     @bp.route(f"/{path}/comments/<int:comment_id>/restore", methods=["POST"])
@@ -242,6 +344,7 @@ def register_admin_routes(app):
         db = get_db()
         db.execute("UPDATE comments SET status = 'visible' WHERE id = ?", (comment_id,))
         db.commit()
+        flash("Comment is visible again.", "ok")
         return redirect(url_for("admin.dashboard"))
 
     @bp.route(f"/{path}/comments/<int:comment_id>/delete", methods=["POST"])
@@ -249,6 +352,7 @@ def register_admin_routes(app):
         db = get_db()
         db.execute("UPDATE comments SET status = 'deleted' WHERE id = ?", (comment_id,))
         db.commit()
+        flash("Comment deleted.", "ok")
         return redirect(url_for("admin.dashboard"))
 
     app.register_blueprint(bp)

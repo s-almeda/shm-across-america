@@ -21,7 +21,7 @@ def trip():
             (pin["id"],),
         ).fetchall()
         photos = db.execute(
-            "SELECT file_path, created_at FROM photos WHERE pin_id = ? ORDER BY created_at ASC",
+            "SELECT file_path, caption, created_at FROM photos WHERE pin_id = ? ORDER BY created_at ASC",
             (pin["id"],),
         ).fetchall()
         comments = db.execute(
@@ -39,7 +39,11 @@ def trip():
                 "is_current": bool(pin["is_current"]),
                 "messages": [{"text": m["text"], "created_at": m["created_at"]} for m in messages],
                 "photos": [
-                    {"url": f"/uploads/{p['file_path']}", "created_at": p["created_at"]}
+                    {
+                        "url": f"/uploads/{p['file_path']}",
+                        "caption": p["caption"],
+                        "created_at": p["created_at"],
+                    }
                     for p in photos
                 ],
                 "comments": [

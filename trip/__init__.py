@@ -12,7 +12,9 @@ from .routes_sms import bp as sms_bp
 def create_app():
     app = Flask(
         __name__,
-        static_folder="../static",
+        # Built by `npm run build` and committed, so deploying stays
+        # git pull + restart with no Node on the server.
+        static_folder="../dist",
         static_url_path="",
         template_folder="../templates",
     )

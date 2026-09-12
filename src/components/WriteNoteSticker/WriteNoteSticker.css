@@ -1,0 +1,64 @@
+/* isolation: isolate is what keeps the paw's multiply blend inside this
+   postit -- without it the blend reaches through to the map behind. */
+.write-note-sticker {
+  --rot: -2.5deg;
+  --sticker-shadow: var(--shadow-rest);
+  position: absolute;
+  right: var(--note-inset);
+  bottom: var(--note-inset);
+  z-index: 5;
+  isolation: isolate;
+  width: var(--note-w);
+  height: var(--note-h);
+  padding: 0.9rem 1rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  /* A blank sheet of paper, not a control. */
+  background-color: var(--paper-note);
+  background-image: url("/assets/textures/lined_paper.jpeg");
+  background-size: cover;
+  background-position: center;
+}
+
+.write-note-sticker__plus {
+  font-family: var(--font-hand);
+  font-size: 1.5rem;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.62);
+}
+
+.write-note-sticker__label {
+  font-family: var(--font-hand);
+  font-size: 0.88rem;
+  line-height: 1.2;
+  text-align: center;
+  color: rgba(0, 0, 0, 0.76);
+}
+
+/* Drawn into the bottom-right corner of the paper. */
+.write-note-sticker__paw {
+  position: absolute;
+  right: 3px;
+  bottom: 1px;
+  width: var(--paw-w);
+  height: var(--paw-h);
+  image-rendering: pixelated;
+  mix-blend-mode: multiply;
+}
+
+@media (max-width: 640px) {
+  .write-note-sticker {
+    padding: 0.6rem 0.6rem 1.5rem;
+  }
+
+  .write-note-sticker__plus {
+    font-size: 1.3rem;
+  }
+
+  .write-note-sticker__label {
+    font-size: 0.7rem;
+  }
+}

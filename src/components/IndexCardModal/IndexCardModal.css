@@ -1,0 +1,141 @@
+.index-card-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: index-card-modal-fade 0.18s ease;
+}
+
+@keyframes index-card-modal-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Plain black-on-white over lined paper -- an index card, not a window. */
+.index-card-modal__card {
+  width: min(90vw, 420px);
+  max-height: 85vh;
+  overflow-y: auto;
+  color: #1a1a1a;
+  background-color: var(--paper-header);
+  background-image: url("/assets/textures/lined_paper.jpeg");
+  background-size: cover;
+  background-position: center;
+  border: 1px solid rgba(0, 0, 0, 0.55);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  padding: 1.1rem 1.25rem 1rem;
+  transform: rotate(-0.6deg);
+}
+
+.index-card-modal__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.35);
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.85rem;
+}
+
+.index-card-modal__title {
+  font-family: var(--font-hand);
+  font-size: 1.05rem;
+  color: rgba(0, 0, 0, 0.8);
+}
+
+.index-card-modal__close {
+  appearance: none;
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.55);
+  cursor: pointer;
+}
+
+.index-card-modal__close:hover {
+  color: #000;
+}
+
+.index-card-modal__body,
+.index-card-modal__body p {
+  font-family: var(--font-hand);
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: rgba(0, 0, 0, 0.78);
+}
+
+.index-card-modal__body p {
+  margin: 0 0 0.7rem;
+}
+
+.index-card-modal__foot {
+  margin-top: 0.8rem;
+  font-family: var(--font-hand);
+  font-size: 0.75rem;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.index-card-modal__body form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+/* Ruled lines rather than boxes, to match the card. */
+.index-card-modal__body input,
+.index-card-modal__body textarea {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  font-family: var(--font-hand);
+  font-size: 0.95rem;
+  color: rgba(0, 0, 0, 0.85);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.4);
+  border-radius: 0;
+  padding: 0.3rem 0.15rem;
+}
+
+.index-card-modal__body textarea {
+  min-height: 90px;
+  resize: vertical;
+  border: 1px solid rgba(0, 0, 0, 0.35);
+  padding: 0.45rem;
+}
+
+.index-card-modal__body input:focus,
+.index-card-modal__body textarea:focus {
+  outline: none;
+  border-color: rgba(0, 0, 0, 0.75);
+}
+
+.index-card-modal__body input::placeholder,
+.index-card-modal__body textarea::placeholder {
+  color: rgba(0, 0, 0, 0.35);
+}
+
+.index-card-modal__body button {
+  appearance: none;
+  -webkit-appearance: none;
+  align-self: flex-start;
+  font-family: var(--font-hand);
+  font-size: 0.95rem;
+  color: #1a1a1a;
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.55);
+  border-radius: 0;
+  padding: 0.35rem 1.1rem;
+  cursor: pointer;
+}
+
+.index-card-modal__body button:hover {
+  background: rgba(0, 0, 0, 0.11);
+}

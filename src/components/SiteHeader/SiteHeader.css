@@ -1,0 +1,27 @@
+.site-header {
+  flex: none;
+  padding: 1rem 1.25rem 0.5rem;
+  background-color: var(--paper-header);
+  background-image: url("/assets/textures/lined_paper.jpeg");
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.site-header__row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.site-header__title {
+  margin: 0;
+  font-size: 1.6rem;
+}
+
+.site-header__tagline {
+  margin: 0.2rem 0 0;
+  color: #666;
+  /* font-style: italic; */
+}

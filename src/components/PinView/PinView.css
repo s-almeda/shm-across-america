@@ -1,0 +1,100 @@
+/* No blur or tint over the map -- each card separates itself with its own
+   drop shadow, and the map stays readable behind the feed. */
+.pin-view {
+  position: absolute;
+  inset: 0;
+  z-index: 800;
+}
+
+/* Left-aligned, directly above the place title. */
+.pin-view__back {
+  position: absolute;
+  top: calc(var(--anchor-y) - 3.7rem);
+  left: calc(var(--anchor-x) - 22px);
+  z-index: 3;
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  box-shadow: var(--shadow-hard);
+  padding: 0.4rem 0.7rem;
+  cursor: pointer;
+}
+
+/* Sits just right of the anchor, vertically centred on it, so the real
+   marker parked there reads as this heading's pin. Above .post-grid so cards
+   scroll underneath it. Carries its own contrast -- the map isn't dimmed. */
+.pin-view__header {
+  position: absolute;
+  left: calc(var(--anchor-x) + 30px);
+  top: var(--anchor-y);
+  transform: translateY(-50%);
+  z-index: 6;
+  background: var(--paper);
+  border: 1px solid var(--ink);
+  box-shadow: var(--shadow-hard);
+  padding: 0.25rem 0.6rem;
+  /* Mounts only once the camera has landed, so it can just play on entry. */
+  animation: pin-view-header-in 0.34s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* Slides out to the right from behind the tack. */
+@keyframes pin-view-header-in {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
+}
+
+/*
+ * Speech-bubble nib pointing left at the tack. Two stacked triangles: the
+ * ink one is a pixel bigger and reads as the outline, the paper one sits on
+ * top and overlaps 1px into the box to hide its left border.
+ */
+.pin-view__header::before,
+.pin-view__header::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  border-style: solid;
+  border-color: transparent;
+  border-left: 0;
+}
+
+.pin-view__header::before {
+  right: 100%;
+  border-width: 8px 8px 8px 0;
+  border-right-color: var(--ink);
+  margin-top: -8px;
+}
+
+.pin-view__header::after {
+  right: calc(100% - 1px);
+  border-width: 7px 7px 7px 0;
+  border-right-color: var(--paper);
+  margin-top: -7px;
+}
+
+.pin-view__place {
+  font-family: var(--font-ui);
+  font-size: 1.15rem;
+  color: var(--ink);
+}
+
+.pin-view__dates {
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+}
+
+@media (max-width: 640px) {
+  .pin-view__place {
+    font-size: 1rem;
+  }
+}

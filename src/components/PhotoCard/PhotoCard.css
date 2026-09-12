@@ -1,0 +1,44 @@
+/* Portrait, so narrower than its column -- but the same height as a postit,
+   which is what keeps the grid's rows even. */
+.photo-card {
+  justify-self: center;
+  display: flex;
+  flex-direction: column;
+  width: var(--photo-w);
+  max-width: 100%;
+  height: var(--card-h);
+  background: #fff;
+  padding: 0.35rem 0.35rem 0.45rem;
+  box-shadow: var(--shadow-rest);
+  transform: rotate(var(--rot, 0deg));
+  transition: var(--lift-ease);
+  will-change: transform, opacity;
+  cursor: pointer;
+}
+
+.photo-card:hover {
+  transform: translateY(var(--lift-y)) rotate(var(--rot-hover, var(--rot, 0deg)));
+  box-shadow: var(--shadow-lift);
+}
+
+/* The card's box sets the picture's shape; the image just fills what's left
+   after the caption, so no aspect-ratio to disagree with the grid. */
+.photo-card__img {
+  display: block;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  object-fit: cover;
+  background: #ddd;
+  border: 1px solid #3a3a3a70;
+}
+
+.photo-card__caption {
+  flex: none;
+  margin-top: 0.3rem;
+  font-family: var(--font-ui);
+  font-size: 0.65rem;
+  line-height: 1.2;
+  color: rgba(0, 0, 0, 0.55);
+  text-align: center;
+}

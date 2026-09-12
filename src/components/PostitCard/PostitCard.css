@@ -1,0 +1,74 @@
+/* One declared height, not aspect-ratio: the grid needs the card's real box
+   to match what it reserves for the row. A long note scrolls inside. */
+.postit-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: var(--card-h);
+  overflow: hidden;
+  padding: 0.55rem 0.7rem 0.6rem;
+  box-shadow: var(--shadow-rest);
+  transform: rotate(var(--rot, 0deg));
+  will-change: transform, opacity;
+}
+
+.postit-card.is-note {
+  background: var(--postit-green);
+}
+
+.postit-card.is-comment {
+  background: var(--postit-yellow);
+}
+
+.postit-card__stamp {
+  flex: none;
+  font-size: 0.6rem;
+  line-height: 1.25;
+  color: var(--ink-stamp-green);
+  margin-bottom: 0.45rem;
+}
+
+.postit-card.is-comment .postit-card__stamp {
+  color: var(--ink-stamp-yellow);
+}
+
+/* Never truncated -- a long post scrolls inside its own card. The ink is
+   semi-transparent black so it reads as soaked into the paper. */
+.postit-card__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  margin: 0;
+  font-family: var(--font-hand);
+  font-size: 0.85rem;
+  line-height: 1.3;
+  color: var(--ink-hand);
+  white-space: pre-wrap;
+}
+
+.postit-card__flag {
+  position: absolute;
+  top: 0.3rem;
+  right: 0.3rem;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--flag-red);
+  cursor: pointer;
+  opacity: 0.55;
+}
+
+.postit-card__flag:hover {
+  opacity: 1;
+}
+
+@media (max-width: 640px) {
+  .postit-card__stamp {
+    font-size: 0.56rem;
+  }
+}

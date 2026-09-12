@@ -1,0 +1,71 @@
+.map-frame__stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+}
+
+/* Tight and close: a wide soft blur reads as hovering above the desk
+   rather than lying on it. */
+.map-frame__shell {
+  max-width: 1000px;
+  width: 100%;
+  margin: 0 auto;
+  filter: drop-shadow(var(--shadow-map));
+}
+
+/*
+ * EDGE SHAPE -- edit --map-shape. Points are x y percentages clockwise from
+ * the top-left; within ~1% of the edge clips almost nothing, push a point
+ * inward (4%) to bite a bigger chunk out of that side.
+ * Drawing the shape in Figma instead: see docs/NOTES.md.
+ */
+.map-frame {
+  --map-shape: polygon(
+    0.4% 1.2%, 14% 0%, 35% 0.8%, 58% 0%, 81% 0.6%, 99.6% 1.2%,
+    100% 24%, 99.4% 47%, 100% 70%, 99.4% 91%, 99.6% 98.8%,
+    83% 100%, 60% 99.2%, 40% 100%, 18% 99.4%, 0.4% 98.8%,
+    0.6% 74%, 0% 50%, 0.6% 27%
+  );
+
+  position: relative;
+  max-width: 1000px;
+  margin: 1.5rem auto;
+  aspect-ratio: 16 / 10;
+  background: var(--paper-map);
+  clip-path: var(--map-shape);
+  overflow: hidden;
+}
+
+/* Cardstock grain multiplied over the map so it reads as printed paper.
+   z-index 450 sits above Leaflet's tile (200) and overlay (400) panes but
+   below markers (600) and tooltips (650), so the grain lands on the map
+   while the pins and cards stay crisp. */
+.map-frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 450;
+  pointer-events: none;
+  background-image: url("/assets/textures/cardstock.jpeg");
+  background-size: cover;
+  background-position: center;
+  mix-blend-mode: multiply;
+  opacity: 0.55;
+}
+
+@media (max-width: 640px) {
+  .map-frame {
+    max-width: 94vw;
+    aspect-ratio: 3 / 4;
+    margin: 1rem auto;
+  }
+
+  /* A feed needs room to read: hand the frame most of the screen while a
+     pin is open, then give it back on the way out. */
+  .map-frame.is-pin-open {
+    aspect-ratio: auto;
+    height: 82vh;
+  }
+}

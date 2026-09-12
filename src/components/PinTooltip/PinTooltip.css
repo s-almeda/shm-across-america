@@ -1,0 +1,53 @@
+/* .pin-tooltip is the class handed to Leaflet's tooltip container. */
+.pin-tooltip.leaflet-tooltip {
+  font-family: var(--font-ui);
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  box-shadow: var(--shadow-hard);
+  padding: 4px 8px;
+}
+
+/*
+ * Speech-bubble nib pointing down at the tack. Two stacked triangles: the ink
+ * one is a pixel bigger and reads as the outline, the paper one sits on top
+ * and overlaps 1px into the box to hide its bottom border. Both override
+ * Leaflet's own ::before arrow, which is a different shape and colour.
+ */
+.pin-tooltip.leaflet-tooltip::before,
+.pin-tooltip.leaflet-tooltip::after {
+  content: "";
+  display: block;
+  position: absolute;
+  left: 50%;
+  border-style: solid;
+  border-color: transparent;
+  border-bottom: 0;
+  background: transparent;
+  pointer-events: none;
+}
+
+.pin-tooltip.leaflet-tooltip::before {
+  bottom: -8px;
+  margin: 0 0 0 -8px;
+  border-width: 8px 8px 0;
+  border-top-color: var(--ink);
+}
+
+.pin-tooltip.leaflet-tooltip::after {
+  bottom: -6px;
+  margin: 0 0 0 -7px;
+  border-width: 7px 7px 0;
+  border-top-color: var(--paper);
+}
+
+.pin-tooltip__place {
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.pin-tooltip__meta {
+  font-size: 0.7rem;
+  color: var(--ink-soft);
+}

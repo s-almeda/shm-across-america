@@ -1,0 +1,14 @@
+.map-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+/* Other pins recede while one is open. */
+.map-canvas.is-pin-open .leaflet-marker-icon:not(.is-focused) {
+  opacity: 0.35;
+}
+
+/* The map is frozen while a pin is open, so zoom would be a dead control. */
+.map-canvas.is-pin-open .leaflet-control-zoom {
+  display: none;
+}

@@ -1,0 +1,22 @@
+/*
+ * Multi-column only works because every card is exactly --card-w x --card-h.
+ * A grid row is as tall as its tallest item, so variable-height cards leave
+ * dead space under the shorter ones that no row-gap can reach.
+ *
+ * row-gap also has to clear both neighbours' rotation bleed: a tilted card's
+ * corners reach past its layout box by w*sin(t) - h*(1-cos(t)) vertically.
+ */
+.post-grid {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(var(--grid-cols), minmax(0, var(--card-w)));
+  justify-content: center;
+  align-content: start;
+  row-gap: var(--grid-row-gap);
+  column-gap: var(--grid-col-gap);
+  padding: calc(var(--anchor-y) + var(--grid-pad-top-extra)) var(--grid-pad-x)
+    var(--grid-pad-bottom);
+}

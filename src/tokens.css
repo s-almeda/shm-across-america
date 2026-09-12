@@ -1,0 +1,93 @@
+/* Every size, colour and shadow the collage uses. Tune here, not in components. */
+
+:root {
+  /* paper + ink */
+  --desk: #9c8b6f;
+  --paper: #fffdf5;
+  --paper-header: #fffdf8;
+  --paper-note: #fdfcf6;
+  --paper-map: #fdf3e7;
+  --postit-green: #d7ecc4;
+  --postit-yellow: #fbe79a;
+  --ink: #2b2b2b;
+  --ink-soft: #6b6b5a;
+  --ink-hand: rgba(0, 0, 0, 0.76);
+  --ink-stamp-green: #5f6b52;
+  --ink-stamp-yellow: #6b6b4a;
+  --flag-red: #c0392b;
+  --route-red: #c0392b;
+
+  --font-ui: "Pixelated MS Sans Serif", "MS Sans Serif", system-ui, sans-serif;
+  --font-hand: "Pangolin", "Comic Sans MS", cursive;
+
+  /* post grid -- every card is exactly --card-w x --card-h, which is what
+     lets a multi-column grid work: equal rows can't leave dead space. */
+  --grid-cols: 3;
+  --card-w: 205px;
+  --card-h: 180px;
+  --photo-w: calc(var(--card-h) * 0.82); /* portrait polaroid, same height */
+  --grid-row-gap: 1.4rem;
+  --grid-col-gap: 1rem;
+  --grid-pad-x: 3.25rem;
+  --grid-pad-bottom: 3.5rem;
+  --grid-pad-top-extra: 3rem;
+
+  /* write-a-note sticker */
+  --note-w: 190px;
+  --note-h: 116px;
+  --note-inset: 1.75rem;
+  --paw-w: 81px; /* writing_hand.png is 244x202 -- exactly 1/3 */
+  --paw-h: 67px;
+
+  /*
+   * Every shadow is <x> <drop> <blur> <ink>. --shadow-ink is the one knob
+   * for "darker"; the blur value is the knob for "sharper" -- lower is
+   * sharper, 0 is a hard offset shadow.
+   */
+  --shadow-ink: rgba(0, 0, 0, 0.72);
+  --shadow-ink-lift: rgba(0, 0, 0, 0.45);
+  --lift-y: -3px;
+  --shadow-rest: 0 2px 3px var(--shadow-ink);
+  --shadow-lift: 0 5px 6px var(--shadow-ink-lift);
+  --shadow-map: 0 2px 2px var(--shadow-ink);
+  --shadow-art: 0 2px 2px var(--shadow-ink);
+  --shadow-hard: 2px 2px 0 var(--shadow-ink);
+  --shadow-peek: 0 1px 2px var(--shadow-ink);
+  --lift-ease: transform 0.16s ease-out, box-shadow 0.16s ease-out;
+
+  /* where a focused pin parks inside the frame; also set inline by JS */
+  --anchor-x: 78px;
+  --anchor-y: 92px;
+}
+
+/*
+ * Breakpoints are 900px and 640px; media queries can't read a custom
+ * property, so those numbers are repeated literally here and in each
+ * component's single media block. Shared sizes change here, not in
+ * components -- that's why this file gets two blocks and they get one.
+ */
+
+/* Three 205px columns need ~750px of frame; below that, drop to two. */
+@media (max-width: 900px) {
+  :root {
+    --grid-cols: 2;
+  }
+}
+
+@media (max-width: 640px) {
+  :root {
+    /* Two columns at this width would be too narrow to read. */
+    --grid-cols: 1;
+    --card-w: 205px;
+    --card-h: 180px;
+    --grid-row-gap: 1.6rem;
+    --grid-pad-x: 1.5rem;
+    --grid-pad-bottom: 7.5rem;
+    --grid-pad-top-extra: 2.4rem;
+    --note-w: 150px;
+    --note-h: 94px;
+    --note-inset: 0.9rem;
+    --paw-w: 61px; /* 1/4 of 244x202 */
+    --paw-h: 51px;
+  }
+}
