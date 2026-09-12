@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- placeholder planned-stop icon; swap for handwriting/photo cutout later -->
+  <circle cx="16" cy="16" r="14" fill="#e0a458"/>
+  <path d="M16 6 L19 13 L27 13 L20.5 18 L23 26 L16 21 L9 26 L11.5 18 L5 13 L13 13 Z" fill="#fdf3e7"/>
+</svg>

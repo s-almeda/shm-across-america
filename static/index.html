@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SHM Across America</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/xp.css/dist/XP.css" />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header id="site-header">
+    <h1>shmtracker</h1>
+    <p id="tagline">a cross-country road trip, live</p>
+  </header>
+
+  <!-- Placeholder "about" tag, sitting on the seam between header and map.
+       Swap the emoji/label for the real about asset later; the click
+       target and modal wiring stay the same. -->
+  <button id="about-trigger" class="about-note" type="button" title="About this trip">
+    📌 about this trip
+  </button>
+
+  <div id="map-frame">
+    <div id="map"></div>
+
+    <!-- Pin view: opens over the map when a pin is clicked. The map is
+         frozen underneath while this is up, so the header pin can be
+         positioned once (at --anchor-x/--anchor-y, where the camera put
+         the real pin) and stay aligned without any sync loop. -->
+    <div id="pin-view" class="pin-view" aria-hidden="true">
+      <div class="pin-view-backdrop"></div>
+
+      <button type="button" class="back-to-map" id="back-to-map">← back to map</button>
+
+      <div class="pin-view-header" id="pin-view-header">
+        <img class="pin-view-pin" src="/assets/pin.svg" alt="">
+        <div class="pin-view-heading">
+          <div class="pin-view-place" id="pin-view-place"></div>
+          <div class="pin-view-dates" id="pin-view-dates"></div>
+        </div>
+      </div>
+
+      <div class="post-grid" id="post-grid"></div>
+    </div>
+  </div>
+
+  <!-- XP.css popup window: the add-comment form and the about text. -->
+  <div class="popup-backdrop" id="asset-modal">
+    <div class="popup window piece-window" id="asset-window">
+      <div class="title-bar">
+        <div class="title-bar-text" id="asset-title">Note</div>
+        <div class="title-bar-controls">
+          <button aria-label="Close" class="popup-close"></button>
+        </div>
+      </div>
+      <div class="window-body" id="asset-body"></div>
+      <div class="status-bar">
+        <p class="status-bar-field" id="asset-status">&nbsp;</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Full-size polaroid viewer. The only thing that still needs a
+       "view bigger" step, since every other post reads in full in the grid. -->
+  <div class="photo-lightbox" id="photo-lightbox">
+    <button type="button" class="lightbox-return" id="photo-return">close ✕</button>
+    <img id="photo-lightbox-img" src="" alt="">
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="/map.js"></script>
+</body>
+</html>

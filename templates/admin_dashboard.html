@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>POST TO MAP!</title>
+  <style>
+    * { box-sizing: border-box; }
+    .hidden { display: none !important; }
+    body { font-family: system-ui, sans-serif; background: #faf6ef; margin: 0; padding: 1rem; color: #222; }
+    h1 { font-size: 1.3rem; }
+    h2 { font-size: 1.05rem; margin-top: 2rem; border-bottom: 2px solid #2c5f2d; padding-bottom: 0.25rem; }
+    header { display: flex; justify-content: space-between; align-items: center; }
+    .header-links { display: flex; align-items: center; gap: 1rem; }
+    a.logout, a.back-to-map { color: #666; font-size: 0.85rem; }
+    .card { background: white; border-radius: 12px; padding: 1rem; margin-bottom: 0.75rem; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+    .card.current { border: 2px solid #2c5f2d; }
+    .badge { display: inline-block; font-size: 0.7rem; background: #2c5f2d; color: white; border-radius: 6px; padding: 0.1rem 0.4rem; margin-left: 0.4rem; }
+    .row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    input, textarea { width: 100%; padding: 0.5rem; font-size: 0.95rem; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 0.5rem; }
+    button { padding: 0.5rem 0.9rem; font-size: 0.9rem; border: none; border-radius: 8px; background: #2c5f2d; color: white; }
+    button.secondary { background: #888; }
+    button.danger { background: #b00020; }
+    form.inline { display: inline; }
+    .msg, .photo-row { font-size: 0.9rem; padding: 0.3rem 0; border-top: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
+    .photo-row img { max-width: 60px; max-height: 60px; border-radius: 6px; object-fit: cover; }
+    .flash { color: #b00020; margin-bottom: 1rem; }
+    details summary { cursor: pointer; font-size: 0.9rem; color: #2c5f2d; margin-top: 0.5rem; }
+    .location-error { color: #b00020; font-size: 0.85rem; margin: -0.25rem 0 0.5rem; }
+    .location-confirm { background: #fef7e0; border: 1px solid #e0c96a; border-radius: 8px; padding: 0.6rem 0.75rem; margin: -0.25rem 0 0.5rem; }
+    .location-confirm .confirm-text { margin: 0 0 0.5rem; font-size: 0.9rem; }
+    .location-confirm .row button { padding: 0.4rem 0.8rem; font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Trip admin</h1>
+    <div class="header-links">
+      <a class="back-to-map" href="/">← Back to map</a>
+      <a class="logout" href="{{ url_for('admin.logout') }}">Log out</a>
+    </div>
+  </header>
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}{% for m in messages %}<div class="flash">{{ m }}</div>{% endfor %}{% endif %}
+  {% endwith %}
+
+  <h2>Comments</h2>
+  <div class="card">
+    <form method="post" action="{{ url_for('admin.toggle_comments') }}">
+      Comments are currently <strong>{{ 'ON' if comments_enabled else 'OFF' }}</strong>
+      <button type="submit" class="{{ 'secondary' if comments_enabled else '' }}">
+        Turn {{ 'off' if comments_enabled else 'on' }}
+      </button>
+    </form>
+  </div>
+
+  {% if flagged %}
+  <h2>Flagged comments ({{ flagged|length }})</h2>
+  {% for c in flagged %}
+    <div class="card">
+      <strong>{{ c.author_name }}</strong> · on {{ c.pin_label or ('pin #' ~ c.pin_id) }} · {{ c.created_at }}
+      <p>{{ c.body }}</p>
+      <div class="row">
+        <form method="post" action="{{ url_for('admin.restore_comment', comment_id=c.id) }}"><button>Restore</button></form>
+        <form method="post" action="{{ url_for('admin.delete_comment', comment_id=c.id) }}"><button class="danger">Delete</button></form>
+      </div>
+    </div>
+  {% endfor %}
+  {% endif %}
+
+  <h2>Add pin</h2>
+  <div class="card">
+    <form method="post" action="{{ url_for('admin.create_pin') }}" class="location-form">
+      <input type="text" class="location-input" placeholder="Place name, Google Maps link, or lat, lng" required>
+      <input type="hidden" class="lat-hidden" name="lat">
+      <input type="hidden" class="lng-hidden" name="lng">
+      <div class="location-error hidden"></div>
+      <div class="location-confirm hidden">
+        <p class="confirm-text"></p>
+        <div class="row">
+          <button type="button" class="confirm-yes">Use this</button>
+          <button type="button" class="confirm-no secondary">Try again</button>
+        </div>
+      </div>
+      <input type="text" class="label-input" name="label" placeholder="Label (optional)">
+      <button type="submit">Add pin (becomes current)</button>
+    </form>
+  </div>
+
+  <h2>Pins</h2>
+  {% for pin in pins %}
+    <div class="card {{ 'current' if pin.is_current else '' }}">
+      <strong>{{ pin.label or ('Pin #' ~ pin.id) }}</strong>
+      {% if pin.is_current %}<span class="badge">current</span>{% endif %}
+      <div>{{ pin.lat }}, {{ pin.lng }} · {{ pin.created_at }}</div>
+
+      {% for m in pin.messages_list %}
+        <div class="msg">
+          <span>{{ m.text }}</span>
+          <form class="inline" method="post" action="{{ url_for('admin.delete_message', message_id=m.id) }}">
+            <button class="danger" type="submit">x</button>
+          </form>
+        </div>
+      {% endfor %}
+
+      {% for p in pin.photos_list %}
+        <div class="photo-row">
+          <img src="/uploads/{{ p.file_path }}" alt="">
+          <form class="inline" method="post" action="{{ url_for('admin.delete_photo', photo_id=p.id) }}">
+            <button class="danger" type="submit">x</button>
+          </form>
+        </div>
+      {% endfor %}
+
+      <details>
+        <summary>Edit / add</summary>
+        <form method="post" action="{{ url_for('admin.edit_pin', pin_id=pin.id) }}" class="location-form">
+          <input type="text" class="location-input" value="{{ pin.lat }}, {{ pin.lng }}" required>
+          <input type="hidden" class="lat-hidden" name="lat" value="{{ pin.lat }}">
+          <input type="hidden" class="lng-hidden" name="lng" value="{{ pin.lng }}">
+          <div class="location-error hidden"></div>
+          <div class="location-confirm hidden">
+            <p class="confirm-text"></p>
+            <div class="row">
+              <button type="button" class="confirm-yes">Use this</button>
+              <button type="button" class="confirm-no secondary">Try again</button>
+            </div>
+          </div>
+          <input type="text" class="label-input" name="label" value="{{ pin.label or '' }}" placeholder="Label">
+          <button type="submit">Save</button>
+        </form>
+        <form method="post" action="{{ url_for('admin.add_message', pin_id=pin.id) }}">
+          <input type="text" name="text" placeholder="Add a note">
+          <button type="submit">Add note</button>
+        </form>
+        <form method="post" action="{{ url_for('admin.add_photo', pin_id=pin.id) }}" enctype="multipart/form-data">
+          <input type="file" name="photo" accept="image/*">
+          <button type="submit">Upload photo</button>
+        </form>
+        <div class="row">
+          {% if not pin.is_current %}
+          <form method="post" action="{{ url_for('admin.make_current', pin_id=pin.id) }}">
+            <button type="submit">Make current</button>
+          </form>
+          {% endif %}
+          <form method="post" action="{{ url_for('admin.delete_pin', pin_id=pin.id) }}" onsubmit="return confirm('Delete this pin and everything on it?');">
+            <button type="submit" class="danger">Delete pin</button>
+          </form>
+        </div>
+      </details>
+    </div>
+  {% endfor %}
+
+  <h2>Planned stops</h2>
+  <div class="card">
+    <form method="post" action="{{ url_for('admin.create_stop') }}" class="location-form">
+      <input type="text" name="name" placeholder="Name" required>
+      <input type="text" class="location-input" placeholder="Place name, Google Maps link, or lat, lng" required>
+      <input type="hidden" class="lat-hidden" name="lat">
+      <input type="hidden" class="lng-hidden" name="lng">
+      <div class="location-error hidden"></div>
+      <div class="location-confirm hidden">
+        <p class="confirm-text"></p>
+        <div class="row">
+          <button type="button" class="confirm-yes">Use this</button>
+          <button type="button" class="confirm-no secondary">Try again</button>
+        </div>
+      </div>
+      <input type="text" name="note" placeholder="Note (optional)">
+      <button type="submit">Add stop</button>
+    </form>
+  </div>
+  {% for stop in stops %}
+    <div class="card">
+      <strong>{{ stop.name }}</strong>
+      <div>{{ stop.lat }}, {{ stop.lng }}{% if stop.note %} · {{ stop.note }}{% endif %}</div>
+      <form method="post" action="{{ url_for('admin.delete_stop', stop_id=stop.id) }}">
+        <button type="submit" class="danger">Delete</button>
+      </form>
+    </div>
+  {% endfor %}
+
+  <script>
+    const RESOLVE_URL = {{ url_for('admin.resolve_location_route')|tojson }};
+
+    async function resolveLocation(query) {
+      const res = await fetch(RESOLVE_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Couldn't resolve that location.");
+      return data;
+    }
+
+    function wireLocationForm(form) {
+      const locInput = form.querySelector(".location-input");
+      const latInput = form.querySelector(".lat-hidden");
+      const lngInput = form.querySelector(".lng-hidden");
+      const labelInput = form.querySelector(".label-input");
+      const errorEl = form.querySelector(".location-error");
+      const confirmEl = form.querySelector(".location-confirm");
+      const confirmText = confirmEl.querySelector(".confirm-text");
+      const confirmYes = confirmEl.querySelector(".confirm-yes");
+      const confirmNo = confirmEl.querySelector(".confirm-no");
+      const submitBtn = form.querySelector('button[type="submit"]');
+
+      let pending = null;
+
+      function applyResolved(data) {
+        latInput.value = data.lat;
+        lngInput.value = data.lng;
+        locInput.value = `${data.lat}, ${data.lng}`;
+        if (labelInput && !labelInput.value.trim() && data.label) {
+          labelInput.value = data.label;
+        }
+      }
+
+      function submitNow() {
+        form.dataset.resolved = "true";
+        if (form.requestSubmit) form.requestSubmit(submitBtn);
+        else form.submit();
+      }
+
+      function showConfirm(data) {
+        pending = data;
+        confirmText.textContent = `Is this where you meant? ${data.label || `${data.lat}, ${data.lng}`}`;
+        confirmEl.classList.remove("hidden");
+        locInput.disabled = true;
+      }
+
+      function hideConfirm() {
+        pending = null;
+        confirmEl.classList.add("hidden");
+        locInput.disabled = false;
+        submitBtn.disabled = false;
+      }
+
+      confirmYes.addEventListener("click", () => {
+        if (!pending) return;
+        applyResolved(pending);
+        hideConfirm();
+        submitNow();
+      });
+
+      confirmNo.addEventListener("click", () => {
+        hideConfirm();
+        locInput.focus();
+        locInput.select();
+      });
+
+      form.addEventListener("submit", async (e) => {
+        if (form.dataset.resolved === "true") {
+          form.dataset.resolved = "false";
+          return; // already resolved -- let this submit go through
+        }
+        e.preventDefault();
+        errorEl.classList.add("hidden");
+        hideConfirm();
+        submitBtn.disabled = true;
+        try {
+          const data = await resolveLocation(locInput.value);
+          if (data.exact) {
+            // a literal lat, lng pair -- nothing was guessed, no need to confirm
+            applyResolved(data);
+            submitNow();
+          } else {
+            showConfirm(data);
+          }
+        } catch (err) {
+          errorEl.textContent = err.message;
+          errorEl.classList.remove("hidden");
+        } finally {
+          if (!pending) submitBtn.disabled = false;
+        }
+      });
+    }
+
+    document.querySelectorAll("form.location-form").forEach(wireLocationForm);
+  </script>
+</body>
+</html>
