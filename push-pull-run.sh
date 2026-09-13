@@ -41,8 +41,25 @@ git push origin "$BRANCH"
 # ----------------------------------------------------------------------------
 step "3. Updating the server"
 # ----------------------------------------------------------------------------
+#
+# The bootstrap is for the chicken-and-egg case: update.sh ships in the repo,
+# so the very first run (or any run after it's renamed) finds it missing,
+# because fetching it is the job of the script that isn't there yet. A reset
+# rather than a pull, for the same reason update.sh uses one -- dist/ is
+# committed build output and would otherwise conflict.
+#
 # -t so sudo inside update.sh can prompt, and so its output streams back live.
-ssh -t "$HOST" "cd $REMOTE_DIR && ./update.sh"
+ssh -t "$HOST" "
+  set -e
+  cd $REMOTE_DIR
+  if [ ! -x ./update.sh ]; then
+    echo '  update.sh missing -- fetching it first'
+    git fetch origin
+    git reset --hard origin/\$(git rev-parse --abbrev-ref HEAD)
+    chmod +x update.sh
+  fi
+  ./update.sh
+"
 
 echo
 echo "========================================================"

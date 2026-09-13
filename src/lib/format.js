@@ -123,9 +123,14 @@ export function pastel(hex, mix = 0.78) {
   return `rgb(${channel(0)}, ${channel(1)}, ${channel(2)})`;
 }
 
-/* Owner posts first (oldest to newest), then comments. */
+/*
+ * Everything at a pin in one chronological run, oldest first -- photos, shm's
+ * notes and visitors' comments interleaved by when they were posted, so the
+ * grid reads top to bottom as the story of that stop rather than as three
+ * separate piles.
+ */
 export function buildItems(pin) {
-  const owner = [
+  return [
     ...pin.photos.map((p) => ({
       kind: "photo",
       url: p.url,
@@ -133,19 +138,13 @@ export function buildItems(pin) {
       created_at: p.created_at,
     })),
     ...pin.messages.map((m) => ({ kind: "note", text: m.text, created_at: m.created_at })),
-  ].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-
-  const comments = pin.comments
-    .slice()
-    .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
-    .map((c) => ({
+    ...pin.comments.map((c) => ({
       kind: "comment",
       id: c.id,
       author_name: c.author_name,
       author_color: c.author_color,
       body: c.body,
       created_at: c.created_at,
-    }));
-
-  return [...owner, ...comments];
+    })),
+  ].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 }
