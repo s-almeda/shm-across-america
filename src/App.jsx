@@ -79,7 +79,12 @@ export default function App() {
      so clicking one while already up close stays close. */
   function clickStop(stop) {
     if (!map || pinOpen) return;
-    map.flyTo([stop.lat, stop.lng], Math.max(map.getZoom(), ZOOM_STOP));
+    // Fixed and short. Leaflet's default duration scales with distance, which
+    // makes a cross-country stop take several seconds for a move that isn't
+    // arriving anywhere.
+    map.flyTo([stop.lat, stop.lng], Math.max(map.getZoom(), ZOOM_STOP), {
+      duration: 0.6,
+    });
   }
 
   function clickPin(pin) {

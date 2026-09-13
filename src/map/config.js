@@ -95,7 +95,7 @@ export const ICONS = {
      derived from it stay where they are. */
   car: { src: "/assets/car.png", w: 160, h: 98, blend: false, ax: 0.7, ay: 0.2, dx: 38, dy: -15, rot: 0.85, focusScale: 1.2, focusDy: -14 },
   tack: { src: "/assets/tacks/tack_1.png", w: 26, h: 31, blend: false, ax: 0.5, ay: 0.5, focusScale: 1.7 },
-  pin: { src: "/assets/pins/pin_1.png", w: 22, h: 24, blend: false, ax: 0.5, ay: 0.5, focusScale: 1.7 },
+  pin: { src: "/assets/pins/pin_1.png", w: 28, h: 30, blend: false, ax: 0.5, ay: 0.5, focusScale: 1.7 },
 };
 
 /*
@@ -120,15 +120,15 @@ export const BACK_BTN_SPOT = (() => {
 
 /*
  * The four orange pins are hand-drawn, so a planned stop picks one instead of
- * the whole route looking stamped. Sizes are each source file at half scale
- * (the files differ by a pixel or two); ICONS.pin still owns the geometry, so
- * a variant only swaps the picture.
+ * the whole route looking stamped. Sizes are each source file at 5/8 scale,
+ * rounded (the files differ by a pixel or two); ICONS.pin still owns the
+ * geometry, so a variant only swaps the picture.
  */
 const PIN_VARIANTS = [
-  { src: "/assets/pins/pin_1.png", w: 22, h: 24 },
-  { src: "/assets/pins/pin_2.png", w: 21, h: 24 },
-  { src: "/assets/pins/pin_3.png", w: 22, h: 26 },
-  { src: "/assets/pins/pin_4.png", w: 21, h: 25 },
+  { src: "/assets/pins/pin_1.png", w: 28, h: 30 },
+  { src: "/assets/pins/pin_2.png", w: 26, h: 30 },
+  { src: "/assets/pins/pin_3.png", w: 28, h: 32 },
+  { src: "/assets/pins/pin_4.png", w: 26, h: 31 },
 ];
 
 /* Hashed from the stop so it keeps the same pin across reloads. */
