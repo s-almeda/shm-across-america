@@ -11,7 +11,10 @@
 
 set -euo pipefail
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+# Where the project lives. Carried across the re-exec below in UPDATE_SH_DIR:
+# the copy runs from /tmp, so working it out from its own path would point at
+# /tmp instead of at the checkout.
+DIR="${UPDATE_SH_DIR:-$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )}"
 
 # Bash reads a script incrementally as it runs, so a `git pull` that rewrites
 # this file mid-execution can make the rest of it garbage. Re-exec from a copy
@@ -20,8 +23,11 @@ if [ "${UPDATE_SH_REEXEC:-}" != "1" ]; then
   COPY="$(mktemp /tmp/update-sh.XXXXXX)"
   cp "$0" "$COPY"
   chmod +x "$COPY"
-  UPDATE_SH_REEXEC=1 exec "$COPY" "$@"
+  UPDATE_SH_REEXEC=1 UPDATE_SH_DIR="$DIR" exec "$COPY" "$@"
 fi
+# Clean up the copy on the way out. Guarded by the path so that a stray
+# UPDATE_SH_REEXEC in the environment can't make this delete the real script.
+case "$0" in /tmp/update-sh.*) trap 'rm -f "$0"' EXIT ;; esac
 
 cd "$DIR"
 
