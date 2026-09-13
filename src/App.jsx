@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import MapCanvas from "./map/MapCanvas";
 import PinMarker from "./map/PinMarker";
 import RouteLine from "./map/RouteLine";
-import { pinVariantFor, ZOOM_OVERVIEW } from "./map/config";
+import { pinVariantFor, ZOOM_OVERVIEW, ZOOM_STOP } from "./map/config";
 import SiteHeader from "./components/SiteHeader/SiteHeader";
 import MapFrame from "./components/MapFrame/MapFrame";
 import PinStack from "./components/PinStack/PinStack";
@@ -73,6 +73,14 @@ export default function App() {
       map.fitBounds(trip.pins.map((p) => [p.lat, p.lng]), { padding: [40, 40], animate: false });
     }
   }, [map, trip]);
+
+  /* A planned stop doesn't open anything -- clicking one just brings it to
+     the middle of the map so you can see where it is. Never zooms back out,
+     so clicking one while already up close stays close. */
+  function clickStop(stop) {
+    if (!map || pinOpen) return;
+    map.flyTo([stop.lat, stop.lng], Math.max(map.getZoom(), ZOOM_STOP));
+  }
 
   function clickPin(pin) {
     if (openPinId === pin.id) {
@@ -183,10 +191,11 @@ export default function App() {
             })}
 
             {/*
-              Planned stops are scenery, deliberately: no click, no camera, no
-              comments. They mark where the trip is headed and say their name
-              on hover, and that's the whole of it. No route line runs through
-              them either -- the line is where we've actually been.
+              Planned stops stay scenery: no detail view, no comments, no
+              focus. Clicking one only centres the map on it. They mark where
+              the trip is headed and say their name on hover, and that's the
+              whole of it. No route line runs through them either -- the line
+              is where we've actually been.
             */}
             {trip.planned_stops.map((stop) => (
               <PinMarker
@@ -196,9 +205,14 @@ export default function App() {
                 lng={stop.lng}
                 icon="pin"
                 zOffset={STOP_Z}
+                onClick={() => clickStop(stop)}
                 tooltip={<PinTooltip place={stop.name} meta={stop.note} />}
               >
-                <PinStack icon="pin" art={pinVariantFor(`stop${stop.id}:${stop.name}`)} />
+                <PinStack
+                  icon="pin"
+                  art={pinVariantFor(`stop${stop.id}:${stop.name}`)}
+                  clickable
+                />
               </PinMarker>
             ))}
           </>

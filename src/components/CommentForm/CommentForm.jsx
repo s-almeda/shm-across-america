@@ -48,7 +48,7 @@ export default function CommentForm({ onSubmit, onColor }) {
       </div>
 
       <textarea
-        placeholder="write your comment here..."
+        placeholder="...write something nice and not evil here..."
         value={body}
         onChange={(e) => setBody(e.target.value)}
         required
