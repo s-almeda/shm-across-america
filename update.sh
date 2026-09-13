@@ -87,8 +87,15 @@ step "4. Migrating the database"
 # or rewrites anything. Doing it here rather than letting the first request do
 # it means a broken migration fails while the old service is still up.
 "$PY" - <<'EOF'
+import os
 from dotenv import load_dotenv
-load_dotenv()
+
+# Explicit path, not a bare load_dotenv(): with no argument it locates .env by
+# walking back up the caller's stack frames, and a script fed in on stdin has
+# no caller frame to walk to -- it raises an AssertionError instead. cwd is the
+# project directory, since the script cd'd there.
+load_dotenv(os.path.join(os.getcwd(), ".env"))
+
 from trip import create_app
 from trip.db import get_db
 
