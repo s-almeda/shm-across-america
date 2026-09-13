@@ -58,9 +58,7 @@
   /* Clearance between the focused pin and the first row of notes. */
   --grid-pad-top-extra: 2.1rem;
 
-  /* prev/next hand. point.png is 442x254, so this keeps its 1.74 ratio. */
-  --point-w: 80px;
-  --point-h: 30px;
+
 
   /* write-a-note sticker */
   --note-w: 190px;

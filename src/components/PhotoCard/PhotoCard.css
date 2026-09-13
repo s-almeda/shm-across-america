@@ -43,18 +43,46 @@
   border: 1px solid #3a3a3a70;
 }
 
-/* Handwritten, like a caption inked onto the polaroid's white band. Capped at
-   --photo-cap-lines and scrolls past that, so a long one can't change the
-   card's height. */
-.photo-card__caption {
+/* The white band. Fixed at --cap-h so a long caption can't change the card's
+   height, and the positioning context for the "there's more" arrow. */
+.photo-card__cap {
+  position: relative;
   flex: none;
   height: var(--cap-h);
-  overflow-y: auto;
   margin-top: var(--photo-cap-gap);
+}
+
+/* Handwritten, like a caption inked onto the polaroid's white band. Clamped
+   to --photo-cap-lines: it ends in an ellipsis rather than scrolling, because
+   a scroll inside a card you're meant to click reads as the wrong gesture. */
+.photo-card__caption {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--photo-cap-lines);
+  line-clamp: var(--photo-cap-lines);
+  overflow: hidden;
+  height: 100%;
   font-family: var(--font-hand);
   font-size: var(--photo-cap-size);
   line-height: var(--photo-cap-lh);
   color: rgba(0, 0, 0, 0.55);
   text-align: center;
-  scrollbar-width: thin;
+}
+
+/* Sits over the end of the last line, on a fade out of the paper, so the
+   ellipsis reads as "... ->": there's more, the photo opens it. */
+.photo-card__more {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  padding-left: 1.4em;
+  font-size: var(--photo-cap-size);
+  line-height: var(--photo-cap-lh);
+  color: rgba(0, 0, 0, 0.55);
+  background: linear-gradient(to right, #fff0, #fff 1.1em);
+  pointer-events: none;
+}
+
+.photo-card:hover .photo-card__more {
+  color: rgba(0, 0, 0, 0.8);
 }

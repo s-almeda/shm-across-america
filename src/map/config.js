@@ -1,9 +1,10 @@
 export const ZOOM_MIN = 4; // pull back far enough for the whole country
 export const ZOOM_OVERVIEW = 5; // initial view on load
 export const ZOOM_DETAIL = 16; // street level; posts read at full size
-/* Clicking a planned stop only goes as far as town level -- there's nothing
-   posted there to read, just "here's where that is". */
-export const ZOOM_STOP = 11;
+/* Clicking a planned stop goes in close enough to read the streets around it
+   -- short of ZOOM_DETAIL, since there's nothing posted there to read at full
+   size, just "here's where that is". */
+export const ZOOM_STOP = 13;
 
 export const CARD_SMALL = 44; // stack sliver size on the map (px)
 const PIN_ANCHOR = { x: 78, y: 92 }; // where a focused pin parks
