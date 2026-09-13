@@ -48,7 +48,13 @@
   --grid-row-gap: 0.75rem;
   --grid-col-gap: 0.6rem;
   --grid-pad-x: 3.25rem;
-  --grid-pad-bottom: 3.5rem;
+  /*
+   * Empty space after the last card, which is what lets the grid keep
+   * scrolling once the cards have run out. Sized from the write-a-note
+   * sticker so any post sitting behind it can always be scrolled up past it
+   * -- and so it stays right when the sticker moves or resizes.
+   */
+  --grid-pad-bottom: calc(var(--note-inset) + var(--note-h) + 2rem);
   /* Clearance between the focused pin and the first row of notes. */
   --grid-pad-top-extra: 2.1rem;
 
@@ -123,7 +129,6 @@
     --grid-cols: 1;
     --grid-row-gap: 0.85rem;
     --grid-pad-x: 1.5rem;
-    --grid-pad-bottom: 7.5rem;
     --grid-pad-top-extra: 2.4rem;
     --note-w: 150px;
     --note-h: 94px;
