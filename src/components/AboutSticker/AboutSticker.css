@@ -9,8 +9,9 @@
  * the map is fine and intentional.
  */
 .about-sticker {
-  --rot: 4deg;
+  --rot: 2deg;
   --sticker-shadow: var(--shadow-rest);
+  font-family: var(--font-hand);
   position: absolute;
   right: 1.5rem;
   bottom: 0;
