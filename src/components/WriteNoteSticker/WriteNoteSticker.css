@@ -47,7 +47,7 @@
   position: absolute;
   right: 3px;
   bottom: 1px;
-  width: 94px;
+  width: var(--paw-w);
   height: auto;
   image-rendering: pixelated;
   mix-blend-mode: multiply;

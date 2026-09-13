@@ -3,7 +3,7 @@ export const ZOOM_OVERVIEW = 5; // initial view on load
 export const ZOOM_DETAIL = 16; // street level; posts read at full size
 
 export const CARD_SMALL = 44; // stack sliver size on the map (px)
-export const PIN_ANCHOR = { x: 78, y: 92 }; // where a focused pin parks
+const PIN_ANCHOR = { x: 78, y: 92 }; // where a focused pin parks
 
 /*
  * w/h: on-screen size. Keep these clean fractions of the source file --
@@ -23,7 +23,7 @@ export const PIN_ANCHOR = { x: 78, y: 92 }; // where a focused pin parks
  * pin is open (see PinSticker). It also sets where the place chip and back
  * button sit, since those flank the sticker, not the map pin.
  */
-export const TOOLTIP_GAP = 8; // clearance between the art and a bubble's nib
+const TOOLTIP_GAP = 8; // clearance between the art and a bubble's nib
 const BACK_BTN_STACK = 68; // gap + back-to-map button + gap, above the art
 const FOCUS_EDGE_GAP = 28; // clearance between a focused pin's art and the frame edge
 
@@ -33,7 +33,7 @@ export function pinIconFor(pin) {
 
 /* How far an icon's art reaches beyond its coordinate: h*ay / w*ax from the
    anchor, less however far dx/dy shifts it back. */
-export function artReach(iconKey) {
+function artReach(iconKey) {
   const art = ICONS[iconKey];
   return {
     up: art.h * art.ay - (art.dy ?? 0),
@@ -121,7 +121,7 @@ export const BACK_BTN_SPOT = (() => {
  * (the files differ by a pixel or two); ICONS.pin still owns the geometry, so
  * a variant only swaps the picture.
  */
-export const PIN_VARIANTS = [
+const PIN_VARIANTS = [
   { src: "/assets/pins/pin_1.png", w: 22, h: 24 },
   { src: "/assets/pins/pin_2.png", w: 21, h: 24 },
   { src: "/assets/pins/pin_3.png", w: 22, h: 26 },

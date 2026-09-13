@@ -68,8 +68,10 @@
   /* Far enough in that the map's torn bottom-right edge doesn't bite the
      sticker. This is what lets the mask sit at a true 100%. */
   --note-inset: 2.75rem;
-  --paw-w: 157.3px; /* writing_hand.png is 244x202 -- scaled up about 25% */
-  --paw-h: 131.3px;
+  /* writing_hand.png is 244x202; height follows from the width. This is a
+     live knob again -- the sticker's CSS had the width hardcoded, so edits
+     here did nothing until now. */
+  --paw-w: 94px;
 
   /*
    * Every shadow is <x> <drop> <blur> <ink>. --shadow-ink is the one knob
@@ -134,7 +136,6 @@
     --note-h: 94px;
     --note-inset: 0.9rem;
     --paw-w: 61px; /* 1/4 of 244x202 */
-    --paw-h: 51px;
     --point-w: 40px;
     --point-h: 23px;
   }

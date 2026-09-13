@@ -4,11 +4,11 @@ import "./MapFrame.css";
    the frame: a mask applies to the element's own shadow too, so a shadow on
    the frame would be cut away with everything else. On the parent it traces
    the already-masked child, following the torn edge. */
-export default function MapFrame({ pinOpen, children }) {
+export default function MapFrame({ children }) {
   return (
     <main className="map-frame__stage">
       <div className="map-frame__shell">
-        <div className={`map-frame${pinOpen ? " is-pin-open" : ""}`}>{children}</div>
+        <div className="map-frame">{children}</div>
       </div>
     </main>
   );

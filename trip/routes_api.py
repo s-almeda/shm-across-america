@@ -1,6 +1,6 @@
 import re
 
-from flask import Blueprint, current_app, jsonify, request
+from flask import Blueprint, jsonify, request
 
 from .db import get_db, now_iso
 
@@ -89,22 +89,6 @@ def trip():
             "comments_enabled": comments_enabled,
         }
     )
-
-
-@bp.route("/comments", methods=["GET"])
-def list_comments():
-    db = get_db()
-    pin_id = request.args.get("pin_id", type=int)
-    if pin_id is not None:
-        rows = db.execute(
-            "SELECT id, pin_id, author_name, author_color, body, created_at FROM comments WHERE pin_id = ? AND status = 'visible' ORDER BY created_at ASC",
-            (pin_id,),
-        ).fetchall()
-    else:
-        rows = db.execute(
-            "SELECT id, pin_id, author_name, author_color, body, created_at FROM comments WHERE status = 'visible' ORDER BY created_at ASC"
-        ).fetchall()
-    return jsonify([dict(r) for r in rows])
 
 
 @bp.route("/comments", methods=["POST"])

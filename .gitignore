@@ -1,5 +1,9 @@
 .env
 *.db
+.DS_Store
+# Database snapshots update.sh takes before each deploy. Server-local: they're
+# the backup, so they must not ride along in the repo.
+/backups/
 /uploads/
 __pycache__/
 venv/
