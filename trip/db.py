@@ -47,20 +47,6 @@ CREATE TABLE IF NOT EXISTS comments (
     status TEXT NOT NULL DEFAULT 'visible'
 );
 
-/* Comments left on a place before it's been visited -- "bring a jacket",
-   "the diner on 5th". A separate table rather than a nullable pin_id on
-   comments: that would mean rebuilding the live comments table to drop a NOT
-   NULL, and these point at a different thing with a different lifetime. */
-CREATE TABLE IF NOT EXISTS stop_comments (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    stop_id INTEGER NOT NULL REFERENCES planned_stops(id),
-    author_name TEXT NOT NULL,
-    author_color TEXT,
-    body TEXT NOT NULL,
-    created_at TEXT NOT NULL,
-    status TEXT NOT NULL DEFAULT 'visible'
-);
-
 CREATE TABLE IF NOT EXISTS settings (
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL

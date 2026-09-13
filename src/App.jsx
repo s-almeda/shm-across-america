@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import MapCanvas from "./map/MapCanvas";
 import PinMarker from "./map/PinMarker";
 import RouteLine from "./map/RouteLine";
-import { pinIconFor, pinVariantFor, ZOOM_OVERVIEW } from "./map/config";
+import { pinVariantFor, ZOOM_OVERVIEW } from "./map/config";
 import SiteHeader from "./components/SiteHeader/SiteHeader";
 import MapFrame from "./components/MapFrame/MapFrame";
 import PinStack from "./components/PinStack/PinStack";
@@ -26,10 +26,7 @@ const CAR_Z = 100000;
 export default function App() {
   const [map, setMap] = useState(null);
   const [trip, setTrip] = useState(null);
-  /* One opened thing, either kind: { kind: "pin" | "stop", id }. Stops open
-     the same detail view so people can leave ideas for a place before the
-     trip reaches it. */
-  const [open, setOpen] = useState(null);
+  const [openPinId, setOpenPinId] = useState(null);
   const [flying, setFlying] = useState(false);
   const [photo, setPhoto] = useState(null); // { url, caption }
   const [modal, setModal] = useState(null); // "about" | "comment" | "comments-off"
@@ -43,40 +40,9 @@ export default function App() {
 
   const onCommentColor = useCallback((hex) => setCommentPaper(pastel(hex)), []);
 
-  const pins = trip?.pins ?? [];
-  const stops = trip?.planned_stops ?? [];
-
-  /* Prev/next walk whichever list the open thing belongs to -- visited pins
-     step along the trip, planned stops step along the plan. */
-  const onStop = open?.kind === "stop";
-  const siblings = onStop ? stops : pins;
-  const openIndex = open ? siblings.findIndex((o) => o.id === open.id) : -1;
-  const openRaw = openIndex >= 0 ? siblings[openIndex] : null;
-  const pinOpen = openRaw !== null;
-
-  /*
-   * A stop is reshaped into the same fields the detail view reads, so one
-   * PinView serves both. A stop has no photos or notes of its own -- only
-   * whatever people have left on it.
-   */
-  const target = useMemo(() => {
-    if (!openRaw) return null;
-    if (!onStop) return openRaw;
-    return {
-      id: `stop-${openRaw.id}`,
-      lat: openRaw.lat,
-      lng: openRaw.lng,
-      label: openRaw.name,
-      is_current: false,
-      messages: [],
-      photos: [],
-      comments: openRaw.comments ?? [],
-    };
-  }, [openRaw, onStop]);
-
-  const items = useMemo(() => (target ? buildItems(target) : []), [target]);
-  const icon = onStop ? "pin" : target ? pinIconFor(target) : "tack";
-  const stickerArt = onStop && openRaw ? pinVariantFor(`stop${openRaw.id}:${openRaw.name}`) : null;
+  const pinOpen = openPinId !== null;
+  const openPin = trip?.pins.find((p) => p.id === openPinId) ?? null;
+  const items = useMemo(() => (openPin ? buildItems(openPin) : []), [openPin]);
 
   /* `traveling` only covers stop-to-stop hops. Clicking a pin from the map is
      a zoom-in with no arc to speak of, so the ground stays put for that. */
@@ -84,14 +50,14 @@ export default function App() {
 
   usePinCamera(
     map,
-    target,
+    openPin,
     () => {
       setFlying(false);
       setTraveling(false);
     },
     // The ground fades back in before touchdown, so it's already there when
     // the notes fan out rather than washing in afterwards.
-    { onApproach: () => setTraveling(false), icon },
+    { onApproach: () => setTraveling(false) },
   );
 
   /* Park the camera on the current pin the first time data lands -- later
@@ -108,25 +74,26 @@ export default function App() {
     }
   }, [map, trip]);
 
-  function openTarget(kind, id) {
-    if (open?.kind === kind && open.id === id) {
-      setOpen(null);
+  function clickPin(pin) {
+    if (openPinId === pin.id) {
+      setOpenPinId(null);
       return;
     }
-    // Switching between two open things is a journey; opening from the map
-    // isn't, so only the former fades the ground away.
-    if (pinOpen) setTraveling(true);
-    setOpen({ kind, id });
+    setOpenPinId(pin.id);
     setFlying(true);
   }
 
+  /* Step along the trip in order. `pins` comes back oldest-first, so -1 is
+     the previous stop and +1 the next. */
+  const pins = trip?.pins ?? [];
+  const openIndex = pins.findIndex((p) => p.id === openPinId);
   const hasPrev = openIndex > 0;
-  const hasNext = openIndex >= 0 && openIndex < siblings.length - 1;
+  const hasNext = openIndex >= 0 && openIndex < pins.length - 1;
 
   function step(delta) {
-    const next = siblings[openIndex + delta];
+    const next = pins[openIndex + delta];
     if (!next) return;
-    setOpen({ kind: open.kind, id: next.id });
+    setOpenPinId(next.id);
     setFlying(true);
     setTraveling(true);
   }
@@ -136,7 +103,7 @@ export default function App() {
       if (e.key === "Escape") {
         if (photo) setPhoto(null);
         else if (modal) setModal(null);
-        else if (pinOpen) setOpen(null);
+        else if (pinOpen) setOpenPinId(null);
         return;
       }
       // Arrows walk the trip, but only while the notes are the thing on screen.
@@ -147,23 +114,17 @@ export default function App() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [photo, modal, pinOpen, openIndex, siblings.length]);
+  }, [photo, modal, pinOpen, openIndex, pins.length]);
 
   async function submitComment({ author_name, author_color, body }) {
-    await postComment({
-      pin_id: onStop ? undefined : open.id,
-      stop_id: onStop ? open.id : undefined,
-      author_name,
-      author_color,
-      body,
-    });
+    await postComment({ pin_id: openPinId, author_name, author_color, body });
     setModal(null);
     await reload();
   }
 
   async function flag(id) {
     if (!confirm("Flag this comment? It will be hidden immediately.")) return;
-    await flagComment(id, onStop);
+    await flagComment(id);
     await reload();
   }
 
@@ -171,7 +132,7 @@ export default function App() {
     <>
       <SiteHeader onAbout={() => setModal("about")} />
 
-      <MapFrame pinOpen={pinOpen}>
+      <MapFrame>
         {/* `reading` waits for the fly-in to land; dimming mid-flight would
             blur the motion. */}
         <MapCanvas
@@ -194,8 +155,8 @@ export default function App() {
                   lat={pin.lat}
                   lng={pin.lng}
                   icon={pin.is_current ? "car" : "tack"}
-                  focused={!onStop && open?.id === pin.id}
-                  onClick={() => openTarget("pin", pin.id)}
+                  focused={openPinId === pin.id}
+                  onClick={() => clickPin(pin)}
                   // pins arrive oldest-first, so a later stop stacks over an
                   // earlier one where their paper overlaps -- except the car,
                   // which is always on top (the current pin isn't necessarily
@@ -214,64 +175,45 @@ export default function App() {
                     peeks={pinItems.slice(-4).map((i) => i.kind)}
                     count={pinItems.length}
                     seed={`pin${pin.id}`}
-                    focused={!onStop && open?.id === pin.id}
+                    focused={openPinId === pin.id}
                     clickable
                   />
                 </PinMarker>
               );
             })}
 
-            {/* Planned stops are markers only -- no route line runs through
-                them, because the trip line is where we've actually been. */}
-            {stops.map((stop) => {
-              const count = (stop.comments ?? []).length;
-              return (
-                <PinMarker
-                  key={`stop-${stop.id}`}
-                  map={map}
-                  lat={stop.lat}
-                  lng={stop.lng}
-                  icon="pin"
-                  focused={onStop && open?.id === stop.id}
-                  onClick={() => openTarget("stop", stop.id)}
-                  zOffset={STOP_Z}
-                  tooltip={
-                    <PinTooltip
-                      place={stop.name}
-                      // No filler subtitle: the orange pin already says it's
-                      // a planned stop.
-                      meta={stop.note || (count ? `${count} idea${count === 1 ? "" : "s"}` : null)}
-                    />
-                  }
-                >
-                  <PinStack
-                    icon="pin"
-                    art={pinVariantFor(`stop${stop.id}:${stop.name}`)}
-                    peeks={(stop.comments ?? []).slice(-4).map(() => "comment")}
-                    count={count}
-                    seed={`stop${stop.id}`}
-                    focused={onStop && open?.id === stop.id}
-                    clickable
-                  />
-                </PinMarker>
-              );
-            })}
+            {/*
+              Planned stops are scenery, deliberately: no click, no camera, no
+              comments. They mark where the trip is headed and say their name
+              on hover, and that's the whole of it. No route line runs through
+              them either -- the line is where we've actually been.
+            */}
+            {trip.planned_stops.map((stop) => (
+              <PinMarker
+                key={`stop-${stop.id}`}
+                map={map}
+                lat={stop.lat}
+                lng={stop.lng}
+                icon="pin"
+                zOffset={STOP_Z}
+                tooltip={<PinTooltip place={stop.name} meta={stop.note} />}
+              >
+                <PinStack icon="pin" art={pinVariantFor(`stop${stop.id}:${stop.name}`)} />
+              </PinMarker>
+            ))}
           </>
         )}
 
         {/* Stays mounted through a step: only the notes and the place header
             come and go, so the arrows, back button and paw sticker don't
             blink out and back. */}
-        {target && (
+        {openPin && (
           <PinView
             arrived={!flying}
-            pin={target}
-            icon={icon}
-            stickerArt={stickerArt}
+            pin={openPin}
             items={items}
-            meta={onStop ? null : fmtDateRange(items, target.created_at)}
             commentsEnabled={trip.comments_enabled}
-            onBack={() => setOpen(null)}
+            onBack={() => setOpenPinId(null)}
             onWriteNote={() => setModal(trip.comments_enabled ? "comment" : "comments-off")}
             onOpenPhoto={setPhoto}
             onFlag={flag}
@@ -291,7 +233,7 @@ export default function App() {
 
       {modal === "comment" && (
         <IndexCardModal
-          title={onStop ? "leave an idea for this stop!" : "leave a note for shm! :3"}
+          title="leave a note for shm! :3"
           paper={commentPaper}
           onClose={() => setModal(null)}
         >

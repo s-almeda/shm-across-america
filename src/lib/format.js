@@ -123,20 +123,19 @@ export function pastel(hex, mix = 0.78) {
   return `rgb(${channel(0)}, ${channel(1)}, ${channel(2)})`;
 }
 
-/* Owner posts first (oldest to newest), then comments. A planned stop has
-   neither photos nor notes -- only what visitors have left on it. */
+/* Owner posts first (oldest to newest), then comments. */
 export function buildItems(pin) {
   const owner = [
-    ...(pin.photos ?? []).map((p) => ({
+    ...pin.photos.map((p) => ({
       kind: "photo",
       url: p.url,
       caption: p.caption,
       created_at: p.created_at,
     })),
-    ...(pin.messages ?? []).map((m) => ({ kind: "note", text: m.text, created_at: m.created_at })),
+    ...pin.messages.map((m) => ({ kind: "note", text: m.text, created_at: m.created_at })),
   ].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 
-  const comments = (pin.comments ?? [])
+  const comments = pin.comments
     .slice()
     .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
     .map((c) => ({

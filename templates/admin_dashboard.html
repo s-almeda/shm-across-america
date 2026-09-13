@@ -106,23 +106,6 @@
   {% endfor %}
   {% endif %}
 
-  {% if flagged_stops %}
-  <h2>Flagged comments on planned stops ({{ flagged_stops|length }})</h2>
-  {% for c in flagged_stops %}
-    <div class="card">
-      <strong>{{ c.author_name }}</strong> · on {{ c.stop_name }} · {{ c.created_at }}
-      <p>{{ c.body }}</p>
-      <div class="row">
-        <form method="post" action="{{ url_for('admin.restore_stop_comment', comment_id=c.id) }}"><button>Restore</button></form>
-        <form method="post" action="{{ url_for('admin.delete_stop_comment', comment_id=c.id) }}"
-              onsubmit="return confirm('Delete this comment for good?');">
-          <button class="danger">Delete</button>
-        </form>
-      </div>
-    </div>
-  {% endfor %}
-  {% endif %}
-
   <h2>Add pin</h2>
   <div class="card">
     <form method="post" action="{{ url_for('admin.create_pin') }}" class="location-form">

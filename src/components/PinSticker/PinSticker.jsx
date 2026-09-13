@@ -15,10 +15,8 @@ import "./PinSticker.css";
  * the art offset by its own anchor fractions plus dx/dy, scaled about that
  * point so the sticker grows without leaving the spot it marks.
  */
-export default function PinSticker({ icon, art: swap }) {
-  // `art` swaps only the picture, so a planned stop's sticker is the same one
-  // of the four orange pins that's lying on the map.
-  const art = { ...ICONS[icon], ...swap };
+export default function PinSticker({ icon }) {
+  const art = ICONS[icon];
   const scale = art.focusScale ?? 1;
 
   return (

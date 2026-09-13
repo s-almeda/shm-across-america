@@ -72,27 +72,13 @@ def trip():
 
     # Hidden stops stay in the database -- they're just off the public map, so
     # they can come back with one click once the road changes.
-    planned_stops = []
-    for row in db.execute(
-        "SELECT id, name, lat, lng, note FROM planned_stops"
-        " WHERE hidden = 0 ORDER BY id ASC"
-    ).fetchall():
-        stop = dict(row)
-        stop["comments"] = [
-            {
-                "id": c["id"],
-                "author_name": c["author_name"],
-                "author_color": c["author_color"],
-                "body": c["body"],
-                "created_at": c["created_at"],
-            }
-            for c in db.execute(
-                "SELECT id, author_name, author_color, body, created_at FROM stop_comments"
-                " WHERE stop_id = ? AND status = 'visible' ORDER BY created_at ASC",
-                (stop["id"],),
-            ).fetchall()
-        ]
-        planned_stops.append(stop)
+    planned_stops = [
+        dict(row)
+        for row in db.execute(
+            "SELECT id, name, lat, lng, note FROM planned_stops"
+            " WHERE hidden = 0 ORDER BY id ASC"
+        ).fetchall()
+    ]
 
     comments_enabled = _setting(db, "comments_enabled", "true") == "true"
 
@@ -129,23 +115,10 @@ def post_comment():
     if _setting(db, "comments_enabled", "true") != "true":
         return jsonify({"error": "comments are disabled"}), 403
 
-    # A comment lands either on a visited pin or on a planned stop that hasn't
-    # been reached yet ("bring a jacket") -- never both.
     pin_id = data.get("pin_id")
-    stop_id = data.get("stop_id")
-    if bool(pin_id) == bool(stop_id):
-        return jsonify({"error": "send exactly one of pin_id or stop_id"}), 400
-
-    if pin_id:
-        target = db.execute("SELECT id FROM pins WHERE id = ?", (pin_id,)).fetchone()
-        if not target:
-            return jsonify({"error": "pin_id must reference an existing pin"}), 400
-    else:
-        target = db.execute(
-            "SELECT id FROM planned_stops WHERE id = ? AND hidden = 0", (stop_id,)
-        ).fetchone()
-        if not target:
-            return jsonify({"error": "stop_id must reference a visible planned stop"}), 400
+    pin = db.execute("SELECT id FROM pins WHERE id = ?", (pin_id,)).fetchone() if pin_id else None
+    if not pin:
+        return jsonify({"error": "pin_id must reference an existing pin"}), 400
 
     author_name = (data.get("author_name") or "").strip()
     body = (data.get("body") or "").strip()
@@ -154,18 +127,11 @@ def post_comment():
 
     author_color = clean_color(data.get("author_color"))
     created_at = now_iso()
-    if pin_id:
-        cur = db.execute(
-            "INSERT INTO comments (pin_id, author_name, author_color, body, created_at, status)"
-            " VALUES (?, ?, ?, ?, ?, 'visible')",
-            (pin_id, author_name, author_color, body, created_at),
-        )
-    else:
-        cur = db.execute(
-            "INSERT INTO stop_comments (stop_id, author_name, author_color, body, created_at, status)"
-            " VALUES (?, ?, ?, ?, ?, 'visible')",
-            (stop_id, author_name, author_color, body, created_at),
-        )
+    cur = db.execute(
+        "INSERT INTO comments (pin_id, author_name, author_color, body, created_at, status)"
+        " VALUES (?, ?, ?, ?, ?, 'visible')",
+        (pin_id, author_name, author_color, body, created_at),
+    )
     db.commit()
 
     return (
@@ -173,7 +139,6 @@ def post_comment():
             {
                 "id": cur.lastrowid,
                 "pin_id": pin_id,
-                "stop_id": stop_id,
                 "author_name": author_name,
                 "author_color": author_color,
                 "body": body,
@@ -188,16 +153,5 @@ def post_comment():
 def flag_comment(comment_id):
     db = get_db()
     db.execute("UPDATE comments SET status = 'flagged' WHERE id = ? AND status = 'visible'", (comment_id,))
-    db.commit()
-    return ("", 204)
-
-
-@bp.route("/stop-comments/<int:comment_id>/flag", methods=["POST"])
-def flag_stop_comment(comment_id):
-    db = get_db()
-    db.execute(
-        "UPDATE stop_comments SET status = 'flagged' WHERE id = ? AND status = 'visible'",
-        (comment_id,),
-    )
     db.commit()
     return ("", 204)
