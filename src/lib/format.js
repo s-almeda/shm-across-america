@@ -79,7 +79,13 @@ export function stableJitter(key, range) {
  */
 const MAX_RUN = 3;
 
-export function rotationsFor(keys, range = 2.5) {
+/* How far a card may wander from its grid cell, in px. Small on purpose: the
+   grid's gaps are tight enough that neighbours already almost touch, so a big
+   nudge would overlap rather than read as hand-placed. */
+const NUDGE_X = 5;
+const NUDGE_Y = 4;
+
+export function placementsFor(keys, range = 2.5) {
   let last = 0;
   let run = 0;
   return keys.map((key) => {
@@ -88,8 +94,17 @@ export function rotationsFor(keys, range = 2.5) {
     if (sign === last && run >= MAX_RUN) sign = -sign;
     run = sign === last ? run + 1 : 1;
     last = sign;
-    // A dead-flat card among tilted ones looks like a bug, so keep a floor.
-    return `${(sign * (0.55 + Math.abs(jitter) * 0.85)).toFixed(2)}deg`;
+    return {
+      // A dead-flat card among tilted ones looks like a bug, so keep a floor.
+      rot: `${(sign * (0.55 + Math.abs(jitter) * 0.85)).toFixed(2)}deg`,
+      /*
+       * Separately hashed from the tilt, so the nudge doesn't correlate with
+       * which way the card leans -- two independent wobbles read as
+       * hand-placed, one doubled-up wobble reads as a formula.
+       */
+      dx: `${stableJitter(`${key}#x`, NUDGE_X).toFixed(1)}px`,
+      dy: `${stableJitter(`${key}#y`, NUDGE_Y).toFixed(1)}px`,
+    };
   });
 }
 

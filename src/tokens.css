@@ -59,9 +59,11 @@
   /* write-a-note sticker */
   --note-w: 190px;
   --note-h: 116px;
-  --note-inset: 1.75rem;
-  --paw-w: 101px; /* writing_hand.png is 244x202 -- scaled up about 25% */
-  --paw-h: 84px;
+  /* Far enough in that the map's torn bottom-right edge doesn't bite the
+     sticker. This is what lets the mask sit at a true 100%. */
+  --note-inset: 2.75rem;
+  --paw-w: 157.3px; /* writing_hand.png is 244x202 -- scaled up about 25% */
+  --paw-h: 131.3px;
 
   /*
    * Every shadow is <x> <drop> <blur> <ink>. --shadow-ink is the one knob

@@ -8,7 +8,9 @@
   overflow: hidden;
   padding: 0.55rem 0.7rem 0.6rem;
   box-shadow: var(--shadow-rest);
-  transform: rotate(var(--rot, 0deg));
+  /* Nudged off its grid cell as well as tilted, so the rows don't read as a
+     grid with a tilt applied. */
+  transform: translate(var(--dx, 0), var(--dy, 0)) rotate(var(--rot, 0deg));
   will-change: transform, opacity;
 }
 

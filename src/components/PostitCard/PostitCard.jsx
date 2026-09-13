@@ -2,14 +2,15 @@ import "./PostitCard.css";
 
 const FLAG_LABEL = "Flag this comment";
 
-export default function PostitCard({ tone, author, authorColor, paper, stamp, body, rot, onFlag }) {
+export default function PostitCard({ tone, author, authorColor, paper, stamp, body, place, onFlag }) {
+  // `paper` is the commenter's colour as pastel stationery; without one the
+  // CSS fallback keeps the default yellow. `place` is the tilt plus a small
+  // nudge off the grid cell.
+  const style = { "--rot": place.rot, "--dx": place.dx, "--dy": place.dy };
+  if (paper) style["--postit-paper"] = paper;
+
   return (
-    <div
-      className={`postit-card is-${tone}`}
-      // `paper` is the commenter's colour as pastel stationery; without one
-      // the CSS fallback keeps the default yellow.
-      style={paper ? { "--rot": rot, "--postit-paper": paper } : { "--rot": rot }}
-    >
+    <div className={`postit-card is-${tone}`} style={style}>
       {onFlag && (
         <button
           type="button"

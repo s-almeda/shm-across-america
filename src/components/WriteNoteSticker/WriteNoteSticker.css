@@ -47,8 +47,8 @@
   position: absolute;
   right: 3px;
   bottom: 1px;
-  width: var(--paw-w);
-  height: var(--paw-h);
+  width: 94px;
+  height: auto;
   image-rendering: pixelated;
   mix-blend-mode: multiply;
 }
@@ -56,7 +56,7 @@
 @media (max-width: 640px) {
   .write-note-sticker {
     padding: 0.6rem 0.6rem 1.5rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 3.5rem;
   }
 
   .write-note-sticker__plus {

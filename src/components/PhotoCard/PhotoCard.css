@@ -17,14 +17,19 @@
   background: #fff;
   padding: var(--photo-pad);
   box-shadow: var(--shadow-rest);
-  transform: rotate(var(--rot, 0deg));
+  /* Nudged off its grid cell as well as tilted, so the rows don't read as a
+     grid with a tilt applied. */
+  transform: translate(var(--dx, 0), var(--dy, 0)) rotate(var(--rot, 0deg));
   transition: var(--lift-ease);
   will-change: transform, opacity;
   cursor: pointer;
 }
 
 .photo-card:hover {
-  transform: translateY(var(--lift-y)) rotate(var(--rot-hover, var(--rot, 0deg)));
+  /* Carries the nudge through, or the card would snap back to its grid cell
+     the moment you hover it. */
+  transform: translate(var(--dx, 0), calc(var(--dy, 0px) + var(--lift-y)))
+    rotate(var(--rot-hover, var(--rot, 0deg)));
   box-shadow: var(--shadow-lift);
 }
 

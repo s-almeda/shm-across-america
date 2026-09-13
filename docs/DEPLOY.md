@@ -54,10 +54,10 @@ dig +short shmtracker.snailbunny.site
 ## 3. Clone and install
 
 ```bash
-sudo mkdir -p /srv/shmtracker
-sudo chown "$USER":"$USER" /srv/shmtracker
-git clone https://github.com/s-almeda/shm-across-america.git /srv/shmtracker
-cd /srv/shmtracker
+sudo mkdir -p ~/Projects/shmtracker
+sudo chown "$USER":"$USER" ~/Projects/shmtracker
+git clone https://github.com/s-almeda/shm-across-america.git ~/Projects/shmtracker
+cd ~/Projects/shmtracker
 
 python3 -m venv venv
 venv/bin/pip install -q -r requirements.txt
@@ -72,10 +72,9 @@ Use a *different* `ADMIN_PASSWORD` than the laptop's, and generate a fresh
 `SECRET_KEY`:
 
 ```bash
-cd /srv/shmtracker
 venv/bin/python -c "import secrets; print('SECRET_KEY=' + secrets.token_hex(32))" > .env
 cat >> .env <<'EOF'
-ADMIN_PASSWORD=CHANGE-ME-to-something-long
+ADMIN_PASSWORD=hopper&anya&shm&max
 ADMIN_PATH=hq-8271
 DATABASE_PATH=/srv/shmtracker/trip.db
 UPLOAD_DIR=/srv/shmtracker/uploads
@@ -101,7 +100,6 @@ The database is gitignored, so the server starts empty. Create the schema and
 the nineteen orange planned-stop pins:
 
 ```bash
-cd /srv/shmtracker
 mkdir -p uploads
 venv/bin/python -m scripts.seed_stops
 ```

@@ -1,14 +1,19 @@
 .site-header {
   flex: none;
   /* The about sticker is positioned off this box and overhangs its bottom
-     edge, so no overflow clipping here. */
+     edge, so no overflow clipping here -- and the header has to paint above
+     the map below it, or the overhang gets covered by the frame. */
   position: relative;
-  padding: 1rem 1.25rem 0.5rem;
+  z-index: 500;
+  padding: 2.2rem 2.26rem 1.6rem;
   background-color: var(--paper-header);
   background-image: url("/assets/textures/lined_paper.jpeg");
   background-size: cover;
   background-position: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  /* No fixed height: the padding above already reserves more than 4rem, so a
+     height would have been smaller than its own contents and the title would
+     spill out the bottom. Padding is the knob for how tall the paper is. */
 }
 
 .site-header__row {

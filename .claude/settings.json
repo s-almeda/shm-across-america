@@ -17,7 +17,9 @@
       "Bash(node -e ' *)",
       "Bash(DATABASE_PATH=/private/tmp/claude-502/-Users-loaner1-main-Projects-shm-across-america/61d40463-dce6-4335-b151-245c1277e114/scratchpad/edit.db venv/bin/python -c ' *)",
       "Bash(sed 's|^export ||' src/map/config.js)",
-      "Bash(node --input-type=module -e ' *)"
+      "Bash(node --input-type=module -e ' *)",
+      "Bash(node -e 'console.log\\(\"row-gap 0.75rem = 12px, col-gap 0.6rem = 9.6px; worst-case two cards nudged toward each other: x\", \\(2*5\\).toFixed\\(0\\)+\"px >\", 9.6, \"-> can touch/overlap slightly; y\", \\(2*4\\).toFixed\\(0\\)+\"px <\", 12\\);')",
+      "Bash(python3 -)"
     ]
   }
 }

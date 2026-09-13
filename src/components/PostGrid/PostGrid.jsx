@@ -1,16 +1,16 @@
 import { useLayoutEffect, useMemo, useRef } from "react";
 import PhotoCard from "../PhotoCard/PhotoCard";
 import PostitCard from "../PostitCard/PostitCard";
-import { fmtDate, fmtStampTail, itemKey, pastel, rotationsFor } from "../../lib/format";
+import { fmtDate, fmtStampTail, itemKey, pastel, placementsFor } from "../../lib/format";
 import { flipIn } from "./flipIn";
 import "./PostGrid.css";
 
 export default function PostGrid({ items, flipKey, anchor, onOpenPhoto, onFlag }) {
   const ref = useRef(null);
 
-  // Tilts are decided for the run of cards together, not per card -- the rule
-  // caps how many in a row may lean the same way.
-  const rots = useMemo(() => rotationsFor(items.map(itemKey)), [items]);
+  // Decided for the run of cards together, not per card -- the tilt rule caps
+  // how many in a row may lean the same way.
+  const places = useMemo(() => placementsFor(items.map(itemKey)), [items]);
 
   // Fans out when a pin opens, not on every later re-render.
   useLayoutEffect(() => {
@@ -22,7 +22,7 @@ export default function PostGrid({ items, flipKey, anchor, onOpenPhoto, onFlag }
     <div className="post-grid" ref={ref}>
       {items.map((item, i) => {
         const key = itemKey(item);
-        const rot = rots[i];
+        const place = places[i];
 
         if (item.kind === "photo") {
           // Same text on the card and in the lightbox.
@@ -32,7 +32,7 @@ export default function PostGrid({ items, flipKey, anchor, onOpenPhoto, onFlag }
               key={key}
               url={item.url}
               caption={caption}
-              rot={rot}
+              place={place}
               onClick={() => onOpenPhoto({ url: item.url, caption })}
             />
           );
@@ -48,7 +48,7 @@ export default function PostGrid({ items, flipKey, anchor, onOpenPhoto, onFlag }
             paper={isNote ? null : pastel(item.author_color)}
             stamp={fmtStampTail(item.created_at)}
             body={isNote ? item.text : item.body}
-            rot={rot}
+            place={place}
             onFlag={isNote ? null : () => onFlag(item.id)}
           />
         );

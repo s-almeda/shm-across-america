@@ -1,9 +1,18 @@
+/*
+ * The stage is whatever height is left under the header, and the map fills
+ * it. A fixed aspect ratio left a growing band of bare desk underneath at
+ * tablet sizes, where the window is tall but not wide enough for the frame to
+ * reach its 1000px cap. The padding here is what used to be the frame's
+ * margin -- it has to live on the parent, since the frame's mask would cut
+ * its own margin off anyway.
+ */
 .map-frame__stage {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
   min-height: 0;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  padding: 1.25rem 1rem 1.5rem;
 }
 
 /* Tight and close: a wide soft blur reads as hovering above the desk
@@ -11,7 +20,7 @@
 .map-frame__shell {
   max-width: 1000px;
   width: 100%;
-  margin: 0 auto;
+  min-height: 0;
   filter: drop-shadow(var(--shadow-map));
 }
 
@@ -23,22 +32,31 @@
  */
 .map-frame {
   position: relative;
-  max-width: 1000px;
-  margin: 1.5rem auto;
-  aspect-ratio: 16 / 10;
+  /* Fills the stage rather than holding a ratio, so there's no dead desk
+     under the map at in-between window sizes. */
+  height: 100%;
   background: var(--paper-map);
   overflow: hidden;
 
   -webkit-mask-image: url("/assets/textures/map_clipping_mask.png");
   mask-image: url("/assets/textures/map_clipping_mask.png");
-  /* Oversized on purpose: at exactly 100% the torn edge bit into the
-     write-a-note sticker in the bottom-right corner. Scaling the mask past
-     the frame pushes its ragged border outside, so the corners stay whole --
-     at the cost of some edge detail being cropped away. */
-  -webkit-mask-size: 108% 112%;
-  mask-size: 108% 112%;
-  -webkit-mask-position: center;
-  mask-position: center;
+  /*
+   * Torn on the bottom and right, straight on the top and left.
+   *
+   * Anchoring the mask to the bottom-right lines those two ragged edges up
+   * exactly with the frame, so they show in full. The overhang then all falls
+   * on the other two sides, pushing those torn edges out of view -- which is
+   * what keeps the zoom buttons in the top-left corner from being bitten.
+   *
+   * The overhang is measured, not guessed: in this artwork the left edge
+   * wanders up to 32px of 1024 (3.1%) and the top up to 13px of 696 (1.9%),
+   * so 105%/104% clears both with a little margin. Redraw the mask with a
+   * deeper tear on those sides and these numbers need raising to match.
+   */
+  -webkit-mask-size: 105% 104%;
+  mask-size: 105% 104%;
+  -webkit-mask-position: right bottom;
+  mask-position: right bottom;
   -webkit-mask-repeat: no-repeat;
   mask-repeat: no-repeat;
   /* Ask for nearest-neighbour so a scaled-up mask keeps hard pixel steps
@@ -64,17 +82,11 @@
   opacity: 0.55;
 }
 
+/* Phones have little room to spare, so the frame takes almost the whole
+   width. It already fills the height, which is what the old 3/4 ratio and the
+   82vh pin-open override were both reaching for. */
 @media (max-width: 640px) {
-  .map-frame {
-    max-width: 94vw;
-    aspect-ratio: 3 / 4;
-    margin: 1rem auto;
-  }
-
-  /* A feed needs room to read: hand the frame most of the screen while a
-     pin is open, then give it back on the way out. */
-  .map-frame.is-pin-open {
-    aspect-ratio: auto;
-    height: 82vh;
+  .map-frame__stage {
+    padding: 0.75rem 0.6rem 1rem;
   }
 }

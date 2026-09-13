@@ -19,6 +19,9 @@ import { buildItems, fmtDateRange, pastel } from "./lib/format";
 /* Planned stops sit under the trip pins: where a stop and a visited pin
    overlap, the place we've actually been wins. */
 const STOP_Z = -1000;
+/* The car is where shm is right now -- it's never behind another pin's paper,
+   whatever order the pins were added in. Well clear of (i + 1) * 10. */
+const CAR_Z = 100000;
 
 export default function App() {
   const [map, setMap] = useState(null);
@@ -194,8 +197,10 @@ export default function App() {
                   focused={!onStop && open?.id === pin.id}
                   onClick={() => openTarget("pin", pin.id)}
                   // pins arrive oldest-first, so a later stop stacks over an
-                  // earlier one where their paper overlaps.
-                  zOffset={(i + 1) * 10}
+                  // earlier one where their paper overlaps -- except the car,
+                  // which is always on top (the current pin isn't necessarily
+                  // the newest one, since any pin can be made current).
+                  zOffset={pin.is_current ? CAR_Z : (i + 1) * 10}
                   tooltip={
                     /* The post count lives on the stack itself now. */
                     <PinTooltip

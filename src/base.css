@@ -58,6 +58,25 @@ body {
   overscroll-behavior: none;
 }
 
+/*
+ * The desk texture lives on <html>, not on <body>.
+ *
+ * body is exactly 100dvh, and on mobile the visual viewport is taller than
+ * that whenever the browser's own chrome is retracting -- so a body-painted
+ * background leaves bare strips at the top and bottom during the scroll that
+ * hides the address bar. html is the element the browser paints the whole
+ * canvas from, so the texture covers everything including the overscroll
+ * area and the safe insets.
+ *
+ * SVG turbulence over the flat colour -- no texture file to load. Bump
+ * baseFrequency for finer grain.
+ */
+html {
+  background-color: var(--desk);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.28'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+}
+
 body {
   margin: 0;
   height: 100dvh;
@@ -65,11 +84,9 @@ body {
   flex-direction: column;
   color: var(--ink);
   font-family: var(--font-ui);
-  /* SVG turbulence over the flat colour -- no texture file to load.
-     Bump baseFrequency for finer grain. */
-  background-color: var(--desk);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.28'/%3E%3C/svg%3E");
-  background-repeat: repeat;
+  /* Transparent on purpose: html owns the texture, and a background here
+     would cover it with a box that's the wrong height on mobile. */
+  background: transparent;
 }
 
 /* The bitmap font is only crisp with antialiasing off. */
