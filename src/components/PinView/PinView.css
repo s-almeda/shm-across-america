@@ -108,8 +108,8 @@
 
 .pin-view__point {
   display: block;
-  width: var(--point-w);
-  height: var(--point-h);
+  width: 57px;
+  height: auto;
   image-rendering: pixelated;
   filter: drop-shadow(var(--shadow-art));
 }
