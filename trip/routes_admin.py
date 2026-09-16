@@ -147,9 +147,17 @@ def register_admin_routes(app):
         lat = request.form.get("lat", type=float)
         lng = request.form.get("lng", type=float)
         label = (request.form.get("label") or "").strip() or None
+        arrival_time = None
+        arrival_time_str = request.form.get("arrival_time", "").strip()
+        if arrival_time_str:
+            try:
+                arrival_time = parse_when(arrival_time_str)
+            except ValueError as e:
+                flash(str(e))
+                return redirect(pin_anchor(pin_id))
         db.execute(
-            "UPDATE pins SET lat = ?, lng = ?, label = ? WHERE id = ?",
-            (lat, lng, label, pin_id),
+            "UPDATE pins SET lat = ?, lng = ?, label = ?, arrival_time = ? WHERE id = ?",
+            (lat, lng, label, arrival_time, pin_id),
         )
         db.commit()
         flash("Pin saved.", "ok")

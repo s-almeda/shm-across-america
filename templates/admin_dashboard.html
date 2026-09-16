@@ -221,7 +221,7 @@
         </form>
 
         <fieldset>
-          <legend>Location &amp; label</legend>
+          <legend>Location, label &amp; arrival</legend>
           <form method="post" action="{{ url_for('admin.edit_pin', pin_id=pin.id) }}" class="location-form">
             <label>Where</label>
             <input type="text" class="location-input" value="{{ pin.lat }}, {{ pin.lng }}" required>
@@ -237,7 +237,13 @@
             </div>
             <label>Label</label>
             <input type="text" class="label-input" name="label" value="{{ pin.label or '' }}" placeholder="Label">
-            <button type="submit">Save location</button>
+            <div class="row">
+              <div>
+                <label>Arrival time (sets route order)</label>
+                <input type="datetime-local" class="f-when" data-iso="{{ pin.arrival_time or pin.created_at }}" data-name="arrival_time">
+              </div>
+              <button type="submit">Save</button>
+            </div>
           </form>
         </fieldset>
 
