@@ -22,7 +22,8 @@
       "Bash(python3 -)",
       "Bash(chmod +x update.sh push-pull-run.sh)",
       "Bash(bash -n update.sh)",
-      "Bash(bash -n push-pull-run.sh)"
+      "Bash(bash -n push-pull-run.sh)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }

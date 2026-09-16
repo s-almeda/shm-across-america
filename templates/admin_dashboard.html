@@ -247,6 +247,9 @@
             <button type="submit">Move the car here</button>
           </form>
           {% endif %}
+          <form method="post" action="{{ url_for('admin.toggle_pin', pin_id=pin.id) }}">
+            <button type="submit" class="secondary">{{ 'Show' if pin.hidden else 'Hide' }} on map</button>
+          </form>
           <form method="post" action="{{ url_for('admin.delete_pin', pin_id=pin.id) }}"
                 onsubmit="return confirm('Delete this pin and every note and photo on it? This cannot be undone.');">
             <button type="submit" class="danger">Delete pin</button>

@@ -26,7 +26,7 @@ def trip():
     db = get_db()
 
     pins = []
-    for pin in db.execute("SELECT * FROM pins ORDER BY created_at ASC, id ASC").fetchall():
+    for pin in db.execute("SELECT * FROM pins WHERE hidden = 0 ORDER BY created_at ASC, id ASC").fetchall():
         messages = db.execute(
             "SELECT text, created_at FROM messages WHERE pin_id = ? ORDER BY created_at ASC",
             (pin["id"],),

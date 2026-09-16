@@ -87,6 +87,7 @@ def init_db(app):
         _add_column(db, "photos", "caption", "TEXT")
         _add_column(db, "comments", "author_color", "TEXT")
         _add_column(db, "planned_stops", "hidden", "INTEGER NOT NULL DEFAULT 0")
+        _add_column(db, "pins", "hidden", "INTEGER NOT NULL DEFAULT 0")
         db.execute(
             "INSERT OR IGNORE INTO settings (key, value) VALUES ('comments_enabled', 'true')"
         )

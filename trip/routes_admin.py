@@ -164,6 +164,26 @@ def register_admin_routes(app):
         flash("That pin is now current -- the car sits here.", "ok")
         return redirect(pin_anchor(pin_id))
 
+    @bp.route(f"/{path}/pins/<int:pin_id>/toggle", methods=["POST"])
+    def toggle_pin(pin_id):
+        """Hide a pin from the public map without losing it -- for removing
+        test pins or temporarily hiding a location until you actually visit."""
+        db = get_db()
+        row = db.execute(
+            "SELECT label, hidden FROM pins WHERE id = ?", (pin_id,)
+        ).fetchone()
+        if not row:
+            flash("That pin is gone.")
+            return redirect(url_for("admin.dashboard"))
+        now_hidden = 0 if row["hidden"] else 1
+        db.execute("UPDATE pins SET hidden = ? WHERE id = ?", (now_hidden, pin_id))
+        db.commit()
+        label = row['label'] or 'pin'
+        flash(
+            f"{label} is {'hidden from' if now_hidden else 'back on'} the map.", "ok"
+        )
+        return redirect(pin_anchor(pin_id))
+
     @bp.route(f"/{path}/pins/<int:pin_id>/delete", methods=["POST"])
     def delete_pin(pin_id):
         db = get_db()
@@ -174,6 +194,7 @@ def register_admin_routes(app):
                 os.remove(fp)
         db.execute("DELETE FROM photos WHERE pin_id = ?", (pin_id,))
         db.execute("DELETE FROM messages WHERE pin_id = ?", (pin_id,))
+        db.execute("DELETE FROM comments WHERE pin_id = ?", (pin_id,))
         db.execute("DELETE FROM pins WHERE id = ?", (pin_id,))
         db.commit()
         flash("Pin deleted, along with its notes and photos.", "ok")
