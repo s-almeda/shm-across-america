@@ -58,6 +58,8 @@
   line-height: 1.3;
   color: var(--ink-hand);
   white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .postit-card__flag {

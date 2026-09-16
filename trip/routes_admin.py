@@ -17,6 +17,7 @@ from werkzeug.utils import secure_filename
 
 from .db import get_db, now_iso
 from .geocode import GeocodeError, resolve_location
+from .media import optimize_image
 
 bp = Blueprint("admin", __name__)
 
@@ -285,6 +286,8 @@ def register_admin_routes(app):
         upload_dir = current_app.config["UPLOAD_DIR"]
         os.makedirs(upload_dir, exist_ok=True)
         file.save(os.path.join(upload_dir, filename))
+        # Re-encoding renames the file, so store what came back, not what we saved.
+        filename = optimize_image(upload_dir, filename)
         db.execute(
             "INSERT INTO photos (pin_id, file_path, caption, created_at) VALUES (?, ?, ?, ?)",
             (pin_id, filename, caption, when),

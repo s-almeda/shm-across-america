@@ -12,6 +12,7 @@ import IndexCardModal from "./components/IndexCardModal/IndexCardModal";
 import PhotoLightbox from "./components/PhotoLightbox/PhotoLightbox";
 import CommentForm from "./components/CommentForm/CommentForm";
 import AboutText from "./components/AboutText/AboutText";
+import TripStatus from "./components/TripStatus/TripStatus";
 import { fetchTrip, flagComment, postComment } from "./lib/api";
 import { usePinCamera } from "./lib/usePinCamera";
 import { buildItems, fmtDateRange, pastel } from "./lib/format";
@@ -26,6 +27,7 @@ const CAR_Z = 100000;
 export default function App() {
   const [map, setMap] = useState(null);
   const [trip, setTrip] = useState(null);
+  const [tripError, setTripError] = useState(null);
   const [openPinId, setOpenPinId] = useState(null);
   const [flying, setFlying] = useState(false);
   const [photo, setPhoto] = useState(null); // { url, caption }
@@ -33,7 +35,18 @@ export default function App() {
   // The pastel the comment form is previewing, so the card can wear it too.
   const [commentPaper, setCommentPaper] = useState(null);
 
-  const reload = useCallback(async () => setTrip(await fetchTrip()), []);
+  /* A reload runs after posting and flagging too, not just on first paint, so
+     a failure here must leave `trip` alone -- dropping it would tear the map
+     out from under someone whose comment actually saved fine. */
+  const reload = useCallback(async () => {
+    try {
+      const fresh = await fetchTrip();
+      setTrip(fresh);
+      setTripError(null);
+    } catch (err) {
+      setTripError(err.message);
+    }
+  }, []);
   useEffect(() => {
     reload();
   }, [reload]);
@@ -153,6 +166,13 @@ export default function App() {
           pinOpen={pinOpen}
           reading={pinOpen && !flying}
           traveling={traveling}
+        />
+
+        <TripStatus
+          loading={!trip}
+          error={tripError}
+          hasTrip={!!trip}
+          onRetry={reload}
         />
 
         {map && trip && (

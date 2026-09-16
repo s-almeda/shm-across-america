@@ -23,7 +23,11 @@
       "Bash(chmod +x update.sh push-pull-run.sh)",
       "Bash(bash -n update.sh)",
       "Bash(bash -n push-pull-run.sh)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(python3 -c ' *)",
+      "Bash(./venv/bin/python -c ' *)",
+      "Bash(./venv/bin/pip install *)",
+      "Bash(./venv/bin/python -c \"import pillow_heif; print\\('pillow-heif OK', pillow_heif.__version__\\)\")"
     ]
   }
 }
