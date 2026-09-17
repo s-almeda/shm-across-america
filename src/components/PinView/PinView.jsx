@@ -2,7 +2,14 @@ import PostGrid from "../PostGrid/PostGrid";
 import PinSticker from "../PinSticker/PinSticker";
 import WriteNoteSticker from "../WriteNoteSticker/WriteNoteSticker";
 import { fmtDateRange } from "../../lib/format";
-import { BACK_BTN_SPOT, focusAnchor, headerOffsetX, pinIconFor } from "../../map/config";
+import {
+  BACK_BTN_SPOT,
+  focusAnchor,
+  headerOffsetX,
+  pinArtSeed,
+  pinIconFor,
+  tackVariantFor,
+} from "../../map/config";
 import "./PinView.css";
 
 export default function PinView({
@@ -44,7 +51,12 @@ export default function PinView({
 
       {/* The sticker copy is the arrival, so it isn't drawn mid-flight -- the
           only pin on screen while moving is the real one down on the map. */}
-      {arrived && <PinSticker icon={icon} />}
+      {arrived && (
+        <PinSticker
+          icon={icon}
+          art={icon === "tack" ? tackVariantFor(pinArtSeed(pin)) : undefined}
+        />
+      )}
 
       {/* Gone while the camera is moving -- it names the place we're headed
           for, so it shouldn't be readable until we're there. Keyed so the

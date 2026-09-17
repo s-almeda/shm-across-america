@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import MapCanvas from "./map/MapCanvas";
 import PinMarker from "./map/PinMarker";
 import RouteLine from "./map/RouteLine";
-import { pinVariantFor, ZOOM_OVERVIEW, ZOOM_STOP } from "./map/config";
+import { pinArtSeed, pinVariantFor, tackVariantFor, ZOOM_OVERVIEW, ZOOM_STOP } from "./map/config";
 import SiteHeader from "./components/SiteHeader/SiteHeader";
 import MapFrame from "./components/MapFrame/MapFrame";
 import PinStack from "./components/PinStack/PinStack";
@@ -205,9 +205,10 @@ export default function App() {
                 >
                   <PinStack
                     icon={pin.is_current ? "car" : "tack"}
+                    art={pin.is_current ? undefined : tackVariantFor(pinArtSeed(pin))}
                     peeks={pinItems.slice(-4).map((i) => i.kind)}
                     count={pinItems.length}
-                    seed={`pin${pin.id}`}
+                    seed={pinArtSeed(pin)}
                     focused={openPinId === pin.id}
                     clickable
                   />

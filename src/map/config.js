@@ -132,13 +132,42 @@ const PIN_VARIANTS = [
   { src: "/assets/pins/pin_4.png", w: 26, h: 31 },
 ];
 
-/* Hashed from the stop so it keeps the same pin across reloads. */
-export function pinVariantFor(seed) {
+/*
+ * Same idea for the green tacks on visited stops. Half scale here, not 5/8 --
+ * the tack files are drawn bigger, and half of tack_1 is the 26x31 that
+ * ICONS.tack has always been, so the default stop doesn't change size.
+ */
+const TACK_VARIANTS = [
+  { src: "/assets/tacks/tack_1.png", w: 26, h: 31 },
+  { src: "/assets/tacks/tack_2.png", w: 24, h: 32 },
+  { src: "/assets/tacks/tack_3.png", w: 22, h: 33 },
+  { src: "/assets/tacks/tack_4.png", w: 27, h: 36 },
+];
+
+/* FNV-1a. Any stable hash would do; this one keeps a stop on the same art
+   across reloads rather than reshuffling the map on every visit. */
+function hashSeed(seed) {
   let h = 2166136261;
   for (let i = 0; i < seed.length; i++) {
     h ^= seed.charCodeAt(i);
     h = Math.imul(h, 16777619);
   }
   h ^= h >>> 16;
-  return PIN_VARIANTS[(h >>> 0) % PIN_VARIANTS.length];
+  return h >>> 0;
+}
+
+export function pinVariantFor(seed) {
+  return PIN_VARIANTS[hashSeed(seed) % PIN_VARIANTS.length];
+}
+
+/* Seeded the same way everywhere it's drawn, so the tack on the map is the
+   tack you see again once the stop is open. */
+export function tackVariantFor(seed) {
+  return TACK_VARIANTS[hashSeed(seed) % TACK_VARIANTS.length];
+}
+
+/* The one seed a pin's art is chosen from, shared by the map marker and the
+   focused sticker so the two can't disagree. */
+export function pinArtSeed(pin) {
+  return `pin${pin.id}`;
 }

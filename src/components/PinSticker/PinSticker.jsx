@@ -15,8 +15,10 @@ import "./PinSticker.css";
  * the art offset by its own anchor fractions plus dx/dy, scaled about that
  * point so the sticker grows without leaving the spot it marks.
  */
-export default function PinSticker({ icon }) {
-  const art = ICONS[icon];
+export default function PinSticker({ icon, art: swap }) {
+  // `art` swaps just the picture, the way PinStack does it -- the geometry
+  // below still comes from the icon, so a variant can't shift the anchor.
+  const art = { ...ICONS[icon], ...swap };
   const scale = art.focusScale ?? 1;
 
   return (
