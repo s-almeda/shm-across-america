@@ -1,44 +1,91 @@
+import tzlookup from "@photostructure/tz-lookup";
+
 /* Newspaper-style month abbreviations -- no Intl format matches these. */
 const MONTHS_ABBR = [
   "jan.", "feb.", "mar.", "apr.", "may", "june",
   "july", "aug.", "sept.", "oct.", "nov.", "dec.",
 ];
 
-export function fmtDate(iso) {
+/* The IANA zone at the pin, so times read as they were on the clock where
+   the post was made rather than on the viewer's. Undefined falls back to the
+   viewer's zone, which Intl does on its own. */
+export function pinTimeZone(pin) {
+  try {
+    return tzlookup(pin.lat, pin.lng);
+  } catch {
+    return undefined;
+  }
+}
+
+/* Calendar and clock fields of a moment as seen in `timeZone`. */
+function partsIn(iso, timeZone) {
+  const fmt = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    weekday: "long",
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+    timeZoneName: "short",
+  });
+  const p = Object.fromEntries(
+    fmt.formatToParts(new Date(iso)).map(({ type, value }) => [type, value]),
+  );
+  return {
+    weekday: p.weekday.toLowerCase(),
+    year: +p.year,
+    month: +p.month - 1,
+    day: +p.day,
+    hour: +p.hour,
+    minute: p.minute,
+    ampm: p.dayPeriod.toLowerCase(),
+    zone: p.timeZoneName,
+  };
+}
+
+export function fmtDate(iso, timeZone) {
   return new Date(iso).toLocaleString(undefined, {
+    timeZone,
     month: "short",
     day: "numeric",
     hour: "numeric",
     minute: "2-digit",
+    timeZoneName: "short",
   });
 }
 
 /* The half of the stamp after the name: "on saturday, sept. 12 @ 2:22am
-   local time:", in the viewer's own timezone. The name is rendered
-   separately so it can carry the commenter's chosen colour. */
-export function fmtStampTail(iso) {
-  const d = new Date(iso);
-  const weekday = d.toLocaleDateString(undefined, { weekday: "long" }).toLowerCase();
-  const hours24 = d.getHours();
-  const hour = hours24 % 12 || 12;
-  const mins = String(d.getMinutes()).padStart(2, "0");
-  const ampm = hours24 >= 12 ? "pm" : "am";
-  return `on ${weekday}, ${MONTHS_ABBR[d.getMonth()]} ${d.getDate()} @ ${hour}:${mins}${ampm} local time:`;
+   MDT:", in the pin's timezone. The name is rendered separately so it can
+   carry the commenter's chosen colour. */
+export function fmtStampTail(iso, timeZone) {
+  const d = partsIn(iso, timeZone);
+  return `on ${d.weekday}, ${MONTHS_ABBR[d.month]} ${d.day} @ ${d.hour}:${d.minute}${d.ampm} ${d.zone}:`;
 }
 
-export function fmtDateRange(items, fallbackIso) {
-  const times = items.map((i) => new Date(i.created_at).getTime());
-  if (!times.length) times.push(new Date(fallbackIso).getTime());
-  const lo = new Date(Math.min(...times));
-  const hi = new Date(Math.max(...times));
+/* The span of shm's own posts at a pin, in the pin's timezone. Visitors'
+   comments are left out -- they can arrive long after shm has moved on. */
+export function fmtDateRange(items, fallbackIso, timeZone) {
+  const own = items.filter((i) => i.kind !== "comment");
+  const isos = own.length ? own.map((i) => i.created_at) : [fallbackIso];
+  const days = isos
+    .map((iso) => partsIn(iso, timeZone))
+    .map((p) => ({ ...p, key: p.year * 10000 + p.month * 100 + p.day }))
+    .sort((a, b) => a.key - b.key);
+  const lo = days[0];
+  const hi = days[days.length - 1];
 
-  const mo = { month: "short", day: "numeric" };
-  if (lo.toDateString() === hi.toDateString()) return lo.toLocaleDateString(undefined, mo);
-  if (lo.getMonth() === hi.getMonth()) {
-    return `${lo.toLocaleDateString(undefined, mo)}–${hi.getDate()}`;
-  }
-  return `${lo.toLocaleDateString(undefined, mo)} – ${hi.toLocaleDateString(undefined, mo)}`;
+  const md = (p) => `${SHORT_MONTHS[p.month]} ${p.day}`;
+  if (lo.key === hi.key) return md(lo);
+  if (lo.year === hi.year && lo.month === hi.month) return `${md(lo)}–${hi.day}`;
+  return `${md(lo)} – ${md(hi)}`;
 }
+
+const SHORT_MONTHS = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
 
 export function itemKey(item) {
   return `${item.kind}:${item.id ?? ""}:${item.created_at ?? ""}:${

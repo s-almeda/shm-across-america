@@ -15,7 +15,7 @@ import AboutText from "./components/AboutText/AboutText";
 import TripStatus from "./components/TripStatus/TripStatus";
 import { fetchTrip, flagComment, postComment } from "./lib/api";
 import { usePinCamera } from "./lib/usePinCamera";
-import { buildItems, fmtDateRange, pastel } from "./lib/format";
+import { buildItems, fmtDateRange, pastel, pinTimeZone } from "./lib/format";
 
 /* Planned stops sit under the trip pins: where a stop and a visited pin
    overlap, the place we've actually been wins. */
@@ -199,7 +199,7 @@ export default function App() {
                     /* The post count lives on the stack itself now. */
                     <PinTooltip
                       place={pin.label || "Somewhere out there"}
-                      meta={fmtDateRange(pinItems, pin.created_at)}
+                      meta={fmtDateRange(pinItems, pin.created_at, pinTimeZone(pin))}
                     />
                   }
                 >

@@ -1,7 +1,7 @@
 import PostGrid from "../PostGrid/PostGrid";
 import PinSticker from "../PinSticker/PinSticker";
 import WriteNoteSticker from "../WriteNoteSticker/WriteNoteSticker";
-import { fmtDateRange } from "../../lib/format";
+import { fmtDateRange, pinTimeZone } from "../../lib/format";
 import {
   BACK_BTN_SPOT,
   focusAnchor,
@@ -30,6 +30,7 @@ export default function PinView({
      the anchor -- where the camera parked the real pin -- and stay aligned
      with no sync loop. */
   const icon = pinIconFor(pin);
+  const timeZone = pinTimeZone(pin);
   const spot = focusAnchor(icon);
   const anchor = {
     "--anchor-x": `${spot.x}px`,
@@ -64,7 +65,7 @@ export default function PinView({
       {arrived && (
         <div className="pin-view__header" key={pin.id}>
           <div className="pin-view__place">{pin.label || "Somewhere out there"}</div>
-          <div className="pin-view__dates">{fmtDateRange(items, pin.created_at)}</div>
+          <div className="pin-view__dates">{fmtDateRange(items, pin.created_at, timeZone)}</div>
         </div>
       )}
 
@@ -83,6 +84,7 @@ export default function PinView({
       {arrived && (
         <PostGrid
           items={items}
+          timeZone={timeZone}
           flipKey={pin.id}
           anchor={spot}
           onOpenPhoto={onOpenPhoto}

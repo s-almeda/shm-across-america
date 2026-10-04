@@ -5,7 +5,7 @@ import { fmtDate, fmtStampTail, itemKey, pastel, placementsFor } from "../../lib
 import { flipIn } from "./flipIn";
 import "./PostGrid.css";
 
-export default function PostGrid({ items, flipKey, anchor, onOpenPhoto, onFlag }) {
+export default function PostGrid({ items, timeZone, flipKey, anchor, onOpenPhoto, onFlag }) {
   const ref = useRef(null);
 
   // Decided for the run of cards together, not per card -- the tilt rule caps
@@ -26,7 +26,7 @@ export default function PostGrid({ items, flipKey, anchor, onOpenPhoto, onFlag }
 
         if (item.kind === "photo") {
           // Same text on the card and in the lightbox.
-          const caption = item.caption || fmtDate(item.created_at);
+          const caption = item.caption || fmtDate(item.created_at, timeZone);
           return (
             <PhotoCard
               key={key}
@@ -46,7 +46,7 @@ export default function PostGrid({ items, flipKey, anchor, onOpenPhoto, onFlag }
             author={isNote ? "shm" : item.author_name}
             authorColor={isNote ? null : item.author_color}
             paper={isNote ? null : pastel(item.author_color)}
-            stamp={fmtStampTail(item.created_at)}
+            stamp={fmtStampTail(item.created_at, timeZone)}
             body={isNote ? item.text : item.body}
             place={place}
             onFlag={isNote ? null : () => onFlag(item.id)}

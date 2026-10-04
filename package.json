@@ -10,6 +10,7 @@
     "check:css": "bash scripts/check-css.sh"
   },
   "dependencies": {
+    "@photostructure/tz-lookup": "^11.7.0",
     "leaflet": "^1.9.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
