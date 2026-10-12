@@ -256,7 +256,9 @@ export default function App() {
             onBack={() => setOpenPinId(null)}
             onWriteNote={() => setModal(trip.comments_enabled ? "comment" : "comments-off")}
             onOpenPhoto={setPhoto}
-            onFlag={flag}
+            /* Flagging is moderation for a live comment box; once comments
+               are off (and the site is frozen) there's nothing to send it to. */
+            onFlag={trip.comments_enabled ? flag : null}
             onPrev={() => step(-1)}
             onNext={() => step(1)}
             hasPrev={hasPrev}

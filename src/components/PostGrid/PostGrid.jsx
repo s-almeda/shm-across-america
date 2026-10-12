@@ -49,7 +49,7 @@ export default function PostGrid({ items, timeZone, flipKey, anchor, onOpenPhoto
             stamp={fmtStampTail(item.created_at, timeZone)}
             body={isNote ? item.text : item.body}
             place={place}
-            onFlag={isNote ? null : () => onFlag(item.id)}
+            onFlag={isNote || !onFlag ? null : () => onFlag(item.id)}
           />
         );
       })}
